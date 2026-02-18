@@ -20,6 +20,25 @@ export const login = createAsyncThunk(
 )
 
 
+export const hrLogin = createAsyncThunk(
+    'auth/hrLogin',
+    async (userInput, { rejectWithValue }) => {
+
+        try {
+            const response = await api.post('/hr/login', userInput);
+            if (response?.data?.statusCode === 200) {
+                return response.data;
+            } else {
+                return rejectWithValue(response.data);
+            }
+        } catch (err) {
+            // let errors = errorHandler(err);
+            return rejectWithValue(err);
+        }
+    }
+)
+
+
 //init state
 
 const initialState = {
@@ -56,6 +75,7 @@ const AuthSlice = createSlice(
                 sessionStorage.removeItem('ai_interview_token')
                
                 localStorage.clear()
+                sessionStorage.clear()
 
             }
         },
@@ -78,13 +98,38 @@ const AuthSlice = createSlice(
                         'ai_interview_token',
                         JSON.stringify({ token: payload?.token })
                     )
-                    // localStorage.setItem('user_role_id', payload?.role_id)
-                    // localStorage.setItem("user_short_name", payload?.role_short_name)
-
+                     sessionStorage.setItem("role", payload?.role)
                 })
-
                 .addCase(login.rejected, (state, response) => {
-                    // console.log("Payload: ", payload);
+                    
+                    state.error = true;
+                    state.loadingLogin = false;
+                    state.message =
+                        response !== undefined && response
+                            ? response
+                            : 'Something went wrong. Try again later.';
+                })
+                 .addCase(hrLogin.pending, (state) => {
+                    state.loadingLogin = true;
+                    state.isLoggedIn = false;
+                    state.error = false;
+                })
+                .addCase(hrLogin.fulfilled, (state, { payload }) => {
+
+                    console.log("Payload", payload);
+                    state.isLoggedIn = true;
+
+                    state.message = payload?.message;
+                    state.loadingLogin = false;
+
+                    sessionStorage.setItem(
+                        'ai_interview_token',
+                        JSON.stringify({ token: payload?.data?.token })
+                    )
+                     sessionStorage.setItem("role", payload?.role)
+                })
+                .addCase(hrLogin.rejected, (state, response) => {
+                    
                     state.error = true;
                     state.loadingLogin = false;
                     state.message =

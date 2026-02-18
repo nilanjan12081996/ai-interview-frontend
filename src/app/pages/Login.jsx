@@ -1,87 +1,9 @@
-// import * as React from "react"
-// import { Button } from "../components/ui/Button"
-// import { Input } from "../components/ui/Input"
-// import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/Card"
-
-// interface LoginProps {
-//   onLogin: () => void
-// }
-
-// export function Login({ onLogin }: LoginProps) {
-//   const [email, setEmail] = React.useState("")
-//   const [password, setPassword] = React.useState("")
-
-//   const handleSubmit = (e: React.FormEvent) => {
-//     e.preventDefault()
-//     // Simulate login
-//     onLogin()
-//   }
-
-//   return (
-//     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-//       <Card className="w-full max-w-md shadow-lg border-t-4 border-t-[#800080]">
-//         <CardHeader className="space-y-1 text-center">
-//           <CardTitle className="text-2xl font-bold text-[#800080]">Interviewer.ai</CardTitle>
-//           <CardDescription>Enter your email below to login to your account</CardDescription>
-//         </CardHeader>
-//         <CardContent>
-//           <form onSubmit={handleSubmit} className="space-y-4">
-//             <div className="space-y-2">
-//               <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Email</label>
-//               <Input
-//                 id="email"
-//                 type="email"
-//                 placeholder="m@example.com"
-//                 value={email}
-//                 onChange={(e) => setEmail(e.target.value)}
-//                 required
-//               />
-//             </div>
-//             <div className="space-y-2">
-//               <div className="flex items-center justify-between">
-//                 <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Password</label>
-//                 <a href="#" className="text-sm text-[#800080] hover:underline">Forgot password?</a>
-//               </div>
-//               <Input
-//                 id="password"
-//                 type="password"
-//                 value={password}
-//                 onChange={(e) => setPassword(e.target.value)}
-//                 required
-//               />
-//             </div>
-//             <Button type="submit" className="w-full bg-[#800080] hover:bg-[#660066]">
-//               Sign In
-//             </Button>
-//           </form>
-//         </CardContent>
-//         <CardFooter className="flex justify-center border-t p-4">
-//           <p className="text-xs text-gray-500">
-//             &copy; 2026 Interviewer.ai. All rights reserved.
-//           </p>
-//         </CardFooter>
-//       </Card>
-//     </div>
-//   )
-// }
-
-
-
-
-
-
-
-
-
-
-
-
 
 import React, { useState } from "react";
-import { Button, Card, Label, TextInput } from "flowbite-react";
+import { Button, Card, Label, Select, TextInput } from "flowbite-react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
-import { login } from "../Reducer/AuthSlice";
+import { hrLogin, login } from "../Reducer/AuthSlice";
 import { useNavigate } from "react-router";
 
 const Login = () => {
@@ -90,10 +12,13 @@ const navigate=useNavigate()
 const[errMsg,setErrorMsg]=useState()
     const {
     register,
+    watch,
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const role=watch("role")
  const onSubmit=(data)=>{
+if(role==="superadmin"){
 dispatch(login(data)).then((res)=>{
   console.log("res",res);
   if(res?.payload?.statusCode===200){
@@ -103,8 +28,33 @@ dispatch(login(data)).then((res)=>{
   if(res?.payload?.response?.data?.statusCode===422){
     setErrorMsg(res?.payload?.response?.data?.message)
   }
+   if(res?.payload?.response?.data?.statusCode===401){
+    setErrorMsg(res?.payload?.response?.data?.message)
+  }
   
 })
+}else{
+  const payload={
+    email:data?.usernameOrEmail,
+    password:data?.password
+  }
+  dispatch(hrLogin(payload)).then((res)=>{
+  console.log("res",res);
+  if(res?.payload?.statusCode===200){
+    setErrorMsg("")
+    navigate("/dashboard")
+  }
+  if(res?.payload?.response?.data?.statusCode===422){
+    setErrorMsg(res?.payload?.response?.data?.message)
+  }
+    if(res?.payload?.response?.data?.statusCode===401){
+    setErrorMsg(res?.payload?.response?.data?.message)
+  }
+  
+})
+}
+
+
  }
 
   return (
@@ -117,6 +67,19 @@ dispatch(login(data)).then((res)=>{
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           {/* Email Field - Added flex-col to the wrapper */}
+           <div className="flex flex-col gap-2">
+            <label htmlFor="email" value="Your email" className="font-medium text-[15px]">Role</label>
+            <Select {...register("role",{required:"Role is required"})}>
+              <option value="">Select</option>
+              <option value="superadmin">Superadmin</option>
+              <option value="hr">HR</option>
+            </Select>
+            {
+             errors?.role&&(
+                <span className="text-red-500">{errors?.role?.message}</span>
+              )
+            }
+          </div>
           <div className="flex flex-col gap-2">
             <label htmlFor="email" value="Your email" className="font-medium text-[15px]">Email</label>
             <TextInput

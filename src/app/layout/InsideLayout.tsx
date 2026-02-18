@@ -196,6 +196,8 @@ import {
 import { Outlet, useNavigate, useLocation } from "react-router-dom"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
+import { useDispatch } from "react-redux"
+import { logout } from "../Reducer/AuthSlice"
 
 export function InsideLayout() {
   const [sidebarOpen, setSidebarOpen] = React.useState(true)
@@ -203,7 +205,7 @@ export function InsideLayout() {
 
   const navigate = useNavigate()
   const location = useLocation()
-
+const dispatch=useDispatch()
   const navItems = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/jobs", label: "Jobs", icon: Briefcase },
@@ -213,7 +215,7 @@ export function InsideLayout() {
   ]
 
   const handleLogout = () => {
-    localStorage.removeItem("token")
+    dispatch(logout())
     navigate("/login")
   }
 
