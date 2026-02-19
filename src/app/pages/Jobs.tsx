@@ -9,8 +9,13 @@ import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { getJobs } from "../Reducer/JobSlice"
 import AddJobsModal from "./Modals/AddJobsModal"
+import { IoMdSend } from "react-icons/io";
+import InterviewModal from "./Modals/InterviewModal"
+import { ToastContainer } from "react-toastify"
 export function Jobs() {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const[inviteModalOpen,setInviteModalOpen]=useState(false)
+  const[jobid,setJobId]=useState()
   const{allJobs}=useSelector((state)=>state?.jobs)
   const dispatch=useDispatch()
   // const jobs = [
@@ -24,8 +29,15 @@ export function Jobs() {
     dispatch(getJobs())
   },[])
 
+  const handleInvitation=(id)=>{
+    console.log("id",id);
+    
+    setJobId(id)
+    setInviteModalOpen(true)
+  }
   return (
     <div className="space-y-6">
+      <ToastContainer/>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Active Jobs</h2>
         {/* <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -122,6 +134,7 @@ export function Jobs() {
                 <TableHead>Role</TableHead>
                  <TableHead>Job Description</TableHead>
                 <TableHead>Date Added</TableHead>
+                <TableHead>Action</TableHead>
                 {/* <TableHead className="text-right">Candidates</TableHead>
                 <TableHead className="text-right">Actions</TableHead> */}
               </TableRow>
@@ -133,6 +146,12 @@ export function Jobs() {
                   <TableCell>{jobData.role}</TableCell>
                   <TableCell className="whitespace-pre-line">{jobData.jd}</TableCell>
                   <TableCell> {new Date(jobData.createdAt).toISOString().split("T")[0]}</TableCell>
+                  <TableCell> 
+
+                    <Button onClick={()=>handleInvitation(jobData.id)} className="bg-[#800080] text-white">
+                     Send invitation <IoMdSend /> 
+                    </Button>
+                  </TableCell>
                   {/* <TableCell className="text-right">{jobData.candidates}</TableCell> */}
                   {/* <TableCell className="text-right">
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -159,6 +178,15 @@ export function Jobs() {
           </Table>
         </CardContent>
       </Card>
+      {
+        inviteModalOpen&&(
+          <InterviewModal
+          inviteModalOpen={inviteModalOpen}
+          setInviteModalOpen={setInviteModalOpen}
+          jobid={jobid}
+          />
+        )
+      }
     </div>
   )
 }

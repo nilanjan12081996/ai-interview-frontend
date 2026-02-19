@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL });
 let domain = window.location.origin
-const formDataURL = ['/admin/category/add-category', '/admin/category/change-category-image', '/admin/mood-meter/add', '/admin/mood-meter/update-image', '/mood-master/create', '/mood-master/image-update','/admin-blog-manage/add','/admin/mood-equelizer/create','goodmood/awarness/image-upload','goodmood/post/image','goodmood/equalizer/upload','goodmood/equalizer/banner/update','goodmood/support/category/image'];
+const formDataURL = ['/admin/category/add-category', '/admin/category/change-category-image', '/admin/mood-meter/add', '/admin/mood-meter/update-image', '/mood-master/create', '/mood-master/image-update','/admin-blog-manage/add','/admin/mood-equelizer/create','goodmood/awarness/image-upload','goodmood/post/image','goodmood/equalizer/upload','goodmood/equalizer/banner/update','goodmood/support/category/image','/interview/schedule'];
 api.interceptors.request.use((req) => {
   let userTokenData;
   try {

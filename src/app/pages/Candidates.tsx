@@ -1,10 +1,13 @@
-import * as React from "react"
+
 import { Search, Link as LinkIcon, Video, FileText, MessageSquare, Code, Download, MoreHorizontal } from "lucide-react"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { Badge } from "../components/ui/Badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table"
+import { useDispatch, useSelector } from "react-redux"
+import { useEffect } from "react"
+import { getCandidateData } from "../Reducer/CandidateSlice"
 
 const candidates = [
   {
@@ -43,6 +46,11 @@ const candidates = [
 ]
 
 export function Candidates() {
+  const{candidatesList}=useSelector((state)=>state?.candidate)
+  const dispatch=useDispatch()
+  useEffect(()=>{
+    dispatch(getCandidateData())
+  },[])
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -64,8 +72,10 @@ export function Candidates() {
                 <TableHead>Candidate</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Resume</TableHead>
-                <TableHead>Date Added</TableHead>
+                {/* <TableHead>Date Added</TableHead> */}
+                <TableHead>Job</TableHead>
                 <TableHead>Interview</TableHead>
+                <TableHead>Interview Timing</TableHead>
                 <TableHead>Resources</TableHead>
                 <TableHead>Recruiter</TableHead>
                 <TableHead>Status</TableHead>
@@ -73,15 +83,15 @@ export function Candidates() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {candidates.map((candidate) => (
+              {candidatesList?.data?.map((candidate) => (
                 <TableRow key={candidate.id}>
                   <TableCell>
-                    <div className="font-medium">{candidate.name}</div>
+                    <div className="font-medium">{candidate.candidateName}</div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col text-xs text-gray-500">
-                      <span>{candidate.email}</span>
-                      <span>{candidate.phone}</span>
+                      <span>{candidate.candidateEmail}</span>
+                      <span>{candidate.candidatePhone}</span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -89,8 +99,9 @@ export function Candidates() {
                       <Download className="h-4 w-4" />
                     </Button>
                   </TableCell>
-                  <TableCell>{candidate.dateAdded}</TableCell>
+                  <TableCell>{candidate.jobName}</TableCell>
                   <TableCell>{candidate.interviewDate}</TableCell>
+                   <TableCell>{candidate.startTime}-{candidate.endTime}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" title="Interview Link">
