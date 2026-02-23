@@ -7,6 +7,7 @@ import { Jobs } from "./pages/Jobs"
 import { Candidates } from "./pages/Candidates"
 import { HRManagement } from "./pages/HRManagement"
 import ProtectedRoute from "./components/ProtectedRoute"
+import InterviewRoom from "./pages/interview/InterviewRoom"
 
 const RoutesConfig = [
   // =========================
@@ -23,6 +24,21 @@ const RoutesConfig = [
       {
         path: "login",
         element: <Login />,
+      },
+   
+   
+    
+    ],
+  },
+
+    {
+    path: "/",
+    element: <OutsideLayout />,
+    children: [
+  
+      {
+        path: "interview/:token",
+        element: <InterviewRoom />,
       },
    
    
