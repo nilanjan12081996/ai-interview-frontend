@@ -95,19 +95,53 @@ export function Candidates() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 text-[#800080]">
-                      <Download className="h-4 w-4" />
-                    </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 text-[#800080]"
+                    onClick={async () => {
+                      try {
+                        const fileUrl = `http://localhost:8085/${candidate.resumeLink}`;
+                        
+                        const response = await fetch(fileUrl);
+                        const blob = await response.blob();
+
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.download = candidate.resumeLink.split("/").pop();
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        window.URL.revokeObjectURL(url);
+                      } catch (error) {
+                        console.error("Download failed:", error);
+                      }
+                    }}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
                   </TableCell>
                   <TableCell>{candidate.jobName}</TableCell>
                   <TableCell>{candidate.interviewDate}</TableCell>
                    <TableCell>{candidate.startTime}-{candidate.endTime}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" title="Interview Link">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" title="Interview Link"
+                       onClick={() => window.open(candidate.interviewLink, "_blank")}
+                      >
                         <LinkIcon className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" title="Recording">
+                      <Button 
+                       onClick={() => {
+                        if (candidate.videoLink) {
+                          window.open(candidate.videoLink, "_blank");
+                        } else {
+                          alert("Recording not available yet");
+                        }
+                      }}
+                      variant="ghost" size="icon" className="h-8 w-8 text-red-500" title="Recording">
                         <Video className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500" title="Transcription">

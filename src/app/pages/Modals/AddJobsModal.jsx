@@ -78,6 +78,7 @@ const AddJobsModal=({
                     <label className="text-sm font-medium">Job Description</label>
                     <Textarea
                     type="text"
+                    rows={6}
                     {...register("jd", {
                         required: "Job Description is required"})}
                     />

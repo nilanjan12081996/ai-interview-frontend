@@ -264,7 +264,7 @@ const [isCoding, setIsCoding] = useState(false);
 
         {/* Date */}
         <div className="grid gap-2">
-          <label className="text-sm font-medium">Date</label>
+          <label className="text-sm font-medium">Interview Date</label>
           <input
             type="date"
             {...register("interviewDate", { required: true })}
