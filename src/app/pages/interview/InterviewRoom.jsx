@@ -507,6 +507,97 @@ const InterviewRoom = () => {
   /* ─────────────────────────────────────────────────────────────────
      SETUP: Step 2 — Screen share
   ───────────────────────────────────────────────────────────────── */
+  const handleRequestScreen = async () => {
+    setSetupError("");
+    const result = await recordingRef.current.requestScreen();
+    if (result.success) {
+      setScreenGranted(true);
+      setSetupStep("ready");
+    } else {
+      setSetupError("Screen share was cancelled. Screen sharing is required for this interview.");
+    }
+  };
+  const handleRequestScreen = async () => {
+    setSetupError("");
+    const result = await recordingRef.current.requestScreen();
+    if (result.success) {
+      setScreenGranted(true);
+      setSetupStep("ready");
+    } else {
+      setSetupError("Screen share was cancelled. Screen sharing is required for this interview.");
+    }
+  };
+
+  /* ─────────────────────────────────────────────────────────────────
+     Interview flow
+  ───────────────────────────────────────────────────────────────── */
+  const speakThenListen = useCallback((text, onAfter) => {
+    isAISpeakingRef.current = true;
+    setStatus("speaking");
+    webrtcRef.current.speakExact(text, () => {
+      isAISpeakingRef.current = false;
+      if (onAfter) onAfter();
+      else setStatus("listening");
+    });
+  }, []);
+
+  const askQuestion = useCallback((index) => {
+    const questions = allquestionsRef.current;
+    if (!questions?.[index]) return;
+    console.log(`📢 Q${index + 1}/${questions.length}: ${questions[index].question}`);
+    setDisplayIndex(index);
+    setIsFollowUp(false);
+    setAiResponseText("");
+
+    // Set question context for AI analysis
+    webrtcRef.current?.setCurrentQuestion(
+      questions[index].question,
+      index,
+      questions.length
+    );
+
+    speakThenListen(questions[index].question);
+  }, [speakThenListen]);
+
+  const sendGreeting = useCallback(() => {
+    speakThenListen(
+      "Hello! Welcome to the interview. I am your AI interviewer today. Please go ahead and introduce yourself."
+    );
+  }, [speakThenListen]);
+
+  const handleStopAndUpload = useCallback(async () => {
+    window.speechSynthesis.cancel();
+    if (webrtcRef.current) webrtcRef.current.disconnect();
+    setStatus("uploading");
+    setUploadProgress("Stopping recording...");
+
+    const blob = await recordingRef.current.stopRecording();
+
+    if (!blob || blob.size === 0) {
+      setUploadProgress("No recording data.");
+      setSetupStep("done");
+      recordingRef.current.cleanup();
+      return;
+    }
+
+    setUploadProgress(`Uploading (${(blob.size / 1024 / 1024).toFixed(1)} MB)...`);
+    const uploadResult = await recordingRef.current.uploadRecording(blob, token, UPLOAD_URL);
+
+    setUploadProgress(
+      uploadResult.success
+        ? "Recording saved successfully!"
+        : `Upload failed: ${uploadResult.error}`
+    );
+    setSetupStep("done");
+    recordingRef.current.cleanup();
+  }, [token]);
+
+  const finishInterview = useCallback(() => {
+    speakThenListen(
+      "Thank you so much for your time today. It was a pleasure speaking with you. We will review your responses and get back to you soon. Have a wonderful day!",
+      () => handleStopAndUpload()
+    );
+  }, [speakThenListen, handleStopAndUpload]);
 
   /* ─────────────────────────────────────────────────────────────────
      HELPER: Extract AI response text from various message formats
@@ -597,91 +688,6 @@ const InterviewRoom = () => {
       speakThenListen(aiText);
     }
   }, [speakThenListen]);
-
-  /* ─────────────────────────────────────────────────────────────────
-     SETUP: Step 2 — Screen share
-  ───────────────────────────────────────────────────────────────── */
-  const handleRequestScreen = async () => {
-    setSetupError("");
-    const result = await recordingRef.current.requestScreen();
-    if (result.success) {
-      setScreenGranted(true);
-      setSetupStep("ready");
-    } else {
-      setSetupError("Screen share was cancelled. Screen sharing is required for this interview.");
-    }
-  };
-
-  /* ─────────────────────────────────────────────────────────────────
-     Interview flow
-  ───────────────────────────────────────────────────────────────── */
-  const speakThenListen = useCallback((text, onAfter) => {
-    isAISpeakingRef.current = true;
-    setStatus("speaking");
-    webrtcRef.current.speakExact(text, () => {
-      isAISpeakingRef.current = false;
-      if (onAfter) onAfter();
-      else setStatus("listening");
-    });
-  }, []);
-
-  const askQuestion = useCallback((index) => {
-    const questions = allquestionsRef.current;
-    if (!questions?.[index]) return;
-    console.log(`📢 Q${index + 1}/${questions.length}: ${questions[index].question}`);
-    setDisplayIndex(index);
-    setIsFollowUp(false);
-    setAiResponseText("");
-
-    // Set question context for AI analysis
-    webrtcRef.current?.setCurrentQuestion(
-      questions[index].question,
-      index,
-      questions.length
-    );
-
-    speakThenListen(questions[index].question);
-  }, [speakThenListen]);
-
-  const sendGreeting = useCallback(() => {
-    speakThenListen(
-      "Hello! Welcome to the interview. I am your AI interviewer today. Please go ahead and introduce yourself."
-    );
-  }, [speakThenListen]);
-
-  const handleStopAndUpload = useCallback(async () => {
-    window.speechSynthesis.cancel();
-    if (webrtcRef.current) webrtcRef.current.disconnect();
-    setStatus("uploading");
-    setUploadProgress("Stopping recording...");
-
-    const blob = await recordingRef.current.stopRecording();
-
-    if (!blob || blob.size === 0) {
-      setUploadProgress("No recording data.");
-      setSetupStep("done");
-      recordingRef.current.cleanup();
-      return;
-    }
-
-    setUploadProgress(`Uploading (${(blob.size / 1024 / 1024).toFixed(1)} MB)...`);
-    const uploadResult = await recordingRef.current.uploadRecording(blob, token, UPLOAD_URL);
-
-    setUploadProgress(
-      uploadResult.success
-        ? "Recording saved successfully!"
-        : `Upload failed: ${uploadResult.error}`
-    );
-    setSetupStep("done");
-    recordingRef.current.cleanup();
-  }, [token]);
-
-  const finishInterview = useCallback(() => {
-    speakThenListen(
-      "Thank you so much for your time today. It was a pleasure speaking with you. We will review your responses and get back to you soon. Have a wonderful day!",
-      () => handleStopAndUpload()
-    );
-  }, [speakThenListen, handleStopAndUpload]);
 
   const handleUserFinishedSpeaking = useCallback(() => {
     const questions = allquestionsRef.current;
