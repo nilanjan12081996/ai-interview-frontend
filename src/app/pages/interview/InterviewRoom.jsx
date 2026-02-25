@@ -517,16 +517,6 @@ const InterviewRoom = () => {
       setSetupError("Screen share was cancelled. Screen sharing is required for this interview.");
     }
   };
-  const handleRequestScreen = async () => {
-    setSetupError("");
-    const result = await recordingRef.current.requestScreen();
-    if (result.success) {
-      setScreenGranted(true);
-      setSetupStep("ready");
-    } else {
-      setSetupError("Screen share was cancelled. Screen sharing is required for this interview.");
-    }
-  };
 
   /* ─────────────────────────────────────────────────────────────────
      Interview flow
