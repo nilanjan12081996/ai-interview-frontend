@@ -1,41 +1,54 @@
+
 import { Button, Textarea, TextInput } from "flowbite-react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/Dialog"
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
-import { createJobs, getJobs } from "../../Reducer/JobSlice";
-const AddJobsModal=({
-     isModalOpen,
-    setIsModalOpen
+import { useEffect } from "react";
+import { getJobs, updateJob } from "../../Reducer/JobSlice";
+const JobEditModal=({
+    openEditModal,
+    setOpenEditModal,
+    jobid
 })=>{
-    const dispatch=useDispatch()
-      const {
-        register,
-        watch,
-        handleSubmit,
-        formState: { errors },
-      } = useForm();
+const{singleJob}=useSelector((state)=>state?.jobs)
+       const dispatch=useDispatch()
+          const {
+            register,
+            setValue,
+            watch,
+            handleSubmit,
+            formState: { errors },
+          } = useForm();
+console.log("singlejob",singleJob);
+useEffect(()=>{
+setValue("clientName",singleJob?.data?.clientName)
+setValue("role",singleJob?.data?.role)
+setValue("jd",singleJob?.data?.jd)
+},[singleJob])
 
-      const onSubmit=(data)=>{
-       dispatch(createJobs({...data})).then((res)=>{
-        if(res?.payload?.statusCode===201)
-        {
-            dispatch(getJobs())
-            setIsModalOpen(false)
+const onSubmit=(data)=>{
+    dispatch(updateJob({
+        id:jobid,
+        data:data
+    })).then((res)=>{
+        if(res?.payload?.statusCode===200){
+            setOpenEditModal(false)
+             dispatch(getJobs())
         }
-       })
-        
-      }
-
+    })
+}
     return(
         <>
-        <Dialog  open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <Dialog  open={openEditModal} onOpenChange={setOpenEditModal}>
     
             <DialogContent  className="sm:max-w-[425px] bg-white max-h-[90vh] overflow-y-auto">
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form
+             onSubmit={handleSubmit(onSubmit)}
+             >
             <DialogHeader>
-                <DialogTitle >Add New Job</DialogTitle>
+                <DialogTitle >Edit Job</DialogTitle>
                 <DialogDescription>
-                Create a new Job for Candidates.
+                Edit Job.
                 </DialogDescription>
             </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -92,7 +105,7 @@ const AddJobsModal=({
                 </div>
 
             <DialogFooter>
-                <Button className="bg-[#800080] hover:bg-[#660066] text-white" type="submit" >Create Job</Button>
+                <Button className="bg-[#800080] hover:bg-[#660066] text-white" type="submit" >Update</Button>
             </DialogFooter>
             </form>
             </DialogContent>
@@ -101,4 +114,4 @@ const AddJobsModal=({
         </>
     )
 }
-export default AddJobsModal
+export default JobEditModal

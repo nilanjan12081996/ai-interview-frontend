@@ -8,6 +8,7 @@ import { Candidates } from "./pages/Candidates"
 import { HRManagement } from "./pages/HRManagement"
 import ProtectedRoute from "./components/ProtectedRoute"
 import InterviewRoom from "./pages/interview/InterviewRoom"
+import CandidateByJob from "./pages/CandidateByJob"
 
 const RoutesConfig = [
   // =========================
@@ -68,6 +69,10 @@ const RoutesConfig = [
       {
         path: "candidates",
         element: <Candidates />,
+      },
+      {
+        path: "candidate-list",
+        element: <CandidateByJob />,
       },
       {
         path: "hr",

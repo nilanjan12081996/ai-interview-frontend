@@ -43,13 +43,13 @@ const toggleStatus = (id) => {
     <div className="space-y-6">
       <ToastContainer/>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">HR Management</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Recruiter Management</h2>
                 <Button
                   className="bg-[#800080] hover:bg-[#660066] text-white"
                   onClick={() => setIsModalOpen(true)}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Add HR User
+                  Add Recruiter
                 </Button>
      
           {

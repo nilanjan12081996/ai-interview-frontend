@@ -6,8 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { Badge } from "../components/ui/Badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table"
 import { useDispatch, useSelector } from "react-redux"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { getCandidateData } from "../Reducer/CandidateSlice"
+import { IoMdEye } from "react-icons/io"
+import LinkModal from "./Modals/LinkModal"
+import { ToastContainer } from "react-toastify"
 
 const candidates = [
   {
@@ -47,12 +50,15 @@ const candidates = [
 
 export function Candidates() {
   const{candidatesList}=useSelector((state)=>state?.candidate)
+  const [shareLink, setShareLink] = useState(null);
+const [open, setOpen] = useState(false);
   const dispatch=useDispatch()
   useEffect(()=>{
     dispatch(getCandidateData())
   },[])
   return (
     <div className="space-y-6">
+      <ToastContainer/>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Candidates</h2>
         <div className="relative">
@@ -73,8 +79,8 @@ export function Candidates() {
                 <TableHead>Contact</TableHead>
                 <TableHead>Resume</TableHead>
                 {/* <TableHead>Date Added</TableHead> */}
-                <TableHead>Job</TableHead>
-                <TableHead>Interview</TableHead>
+                <TableHead>Client Name</TableHead>
+                <TableHead>Interview Date</TableHead>
                 <TableHead>Interview Timing</TableHead>
                 <TableHead>Resources</TableHead>
                 <TableHead>Recruiter</TableHead>
@@ -95,6 +101,7 @@ export function Candidates() {
                     </div>
                   </TableCell>
                   <TableCell>
+                    <div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -122,18 +129,30 @@ export function Candidates() {
                   >
                     <Download className="h-4 w-4" />
                   </Button>
+                   <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 text-[#800080]"
+                    onClick={() => {
+                                const fileUrl = `http://localhost:8085/${candidate.resumeLink}`;
+                                window.open(fileUrl, "_blank");
+                            }}
+                  >
+                   <IoMdEye  className="h-4 w-4" />
+                  </Button>
+                  </div>
                   </TableCell>
                   <TableCell>{candidate.jobName}</TableCell>
                   <TableCell>{candidate.interviewDate}</TableCell>
                    <TableCell>{candidate.startTime}-{candidate.endTime}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" title="Interview Link"
+                      {/* <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" title="Interview Link"
                        onClick={() => window.open(candidate.interviewLink, "_blank")}
                       >
                         <LinkIcon className="h-4 w-4" />
-                      </Button>
-                      <Button 
+                      </Button> */}
+                      {/* <Button 
                        onClick={() => {
                         if (candidate.videoLink) {
                           window.open(candidate.videoLink, "_blank");
@@ -142,6 +161,35 @@ export function Candidates() {
                         }
                       }}
                       variant="ghost" size="icon" className="h-8 w-8 text-red-500" title="Recording">
+                        <Video className="h-4 w-4" />
+                      </Button> */}
+
+                        <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-blue-500"
+                        title="Interview Link"
+                        onClick={() => {
+                          setShareLink(candidate.interviewLink);
+                          setOpen(true);
+                        }}
+                      >
+                        <LinkIcon className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-500"
+                        title="Recording"
+                        onClick={() => {
+                          if (candidate.videoLink) {
+                            setShareLink(candidate.videoLink);
+                            setOpen(true);
+                          } else {
+                            alert("Recording not available yet");
+                          }
+                        }}
+                      >
                         <Video className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500" title="Transcription">
@@ -176,6 +224,15 @@ export function Candidates() {
           </Table>
         </CardContent>
       </Card>
+      {
+        open&&(
+          <LinkModal
+          open={open}
+          setOpen={setOpen}
+          shareLink={shareLink}
+          />
+        )
+      }
     </div>
   )
 }

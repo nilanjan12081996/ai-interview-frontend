@@ -8,6 +8,7 @@ import { scheduleInterview } from "../../Reducer/CandidateSlice";
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { HiUpload, HiDocumentText } from "react-icons/hi";
+import { getCandidateByJob } from "../../Reducer/JobSlice";
 const InterviewModal=({
     inviteModalOpen,
     setInviteModalOpen,
@@ -41,6 +42,7 @@ const [isCoding, setIsCoding] = useState(false);
                 if(res?.payload?.statusCode===201){
                     toast.success(res?.payload?.message)
                     setInviteModalOpen(false)
+                    dispatch(getCandidateByJob({id:jobid}))
                 }
                 
             })

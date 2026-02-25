@@ -210,7 +210,7 @@ const dispatch=useDispatch()
     { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/jobs", label: "Jobs", icon: Briefcase },
     { path: "/candidates", label: "Candidates", icon: Users },
-    { path: "/hr", label: "HR Management", icon: UserCog },
+    { path: "/hr", label: "Recruiter Management", icon: UserCog },
     { path: "/settings", label: "Settings", icon: Settings },
   ]
 
