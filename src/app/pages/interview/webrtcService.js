@@ -7,6 +7,9 @@ export class WebRTCService {
     this.audioEl = null;
     this.synth = window.speechSynthesis;
     this.isSpeaking = false;
+    this.currentQuestion = null;  // Store current question for context
+    this.followUpCount = 0;        // Track follow-ups per question
+    this.maxFollowUps = 2;         // Max follow-ups before moving on
   }
 
   async connect(token) {
@@ -30,12 +33,11 @@ export class WebRTCService {
 
     this.dc.onopen = () => {
       console.log("✅ Data channel open");
-      // Configure session: only VAD + transcription — NO voice output needed
-      // We use browser TTS for speaking, OpenAI only listens to the user
+      // Configure session: Adaptive AI interviewer
       this.send({
         type: "session.update",
         session: {
-          modalities: ["text"],           // text only — no audio output from AI
+          modalities: ["text"],
           input_audio_format: "pcm16",
           input_audio_transcription: {
             model: "whisper-1",
@@ -44,13 +46,9 @@ export class WebRTCService {
             type: "server_vad",
             threshold: 0.5,
             prefix_padding_ms: 300,
-            silence_duration_ms: 1000,   // 1s silence = user done speaking
+            silence_duration_ms: 1500,
           },
-          // Lock the AI: do not respond conversationally, just transcribe
-          instructions:
-            "You are a silent transcription service. " +
-            "Do NOT generate any responses. Do NOT speak. Do NOT answer questions. " +
-            "Your only job is to transcribe what the user says. Stay completely silent.",
+          instructions: this._getAdaptiveInstructions(),
         },
       });
     };
@@ -139,9 +137,74 @@ export class WebRTCService {
   }
 
   /**
-   * Suppress AI from auto-responding to user speech.
-   * After VAD detects the user stopped, OpenAI may try to generate a response.
-   * We cancel it immediately since we handle flow control ourselves.
+   * Set the current question context for AI
+   * @param {string} question - The current interview question
+   * @param {number} index - Question index
+   * @param {number} total - Total number of questions
+   */
+  setCurrentQuestion(question, index = 0, total = 0) {
+    this.currentQuestion = question;
+    this.followUpCount = 0;
+    // Send context to AI
+    this.send({
+      type: "conversation.item.create",
+      item: {
+        type: "message",
+        role: "system",
+        content: [
+          {
+            type: "input_text",
+            text: `CURRENT INTERVIEW QUESTION (${index + 1}/${total}):\n${question}\n\nRemember: analyze the answer and respond accordingly.`,
+          },
+        ],
+      },
+    });
+  }
+
+  /**
+   * Tell AI to move to next question
+   */
+  signalMoveNext() {
+    this.followUpCount = 0;
+    this.send({
+      type: "conversation.item.create",
+      item: {
+        type: "message",
+        role: "system",
+        content: [
+          {
+            type: "input_text",
+            text: "MOVE_TO_NEXT_QUESTION",
+          },
+        ],
+      },
+    });
+  }
+
+  /**
+   * Reset follow-up counter (when moving to new question)
+   */
+  resetFollowUpCount() {
+    this.followUpCount = 0;
+  }
+
+  /**
+   * Increment follow-up counter
+   */
+  incrementFollowUp() {
+    this.followUpCount++;
+  }
+
+  /**
+   * Get current follow-up count
+   */
+  getFollowUpCount() {
+    return this.followUpCount;
+  }
+
+  /**
+   * Suppress AI from auto-responding (kept for backward compatibility)
+   * Now only used if we need to cancel an ongoing response
    */
   suppressAIResponse() {
     this.send({ type: "response.cancel" });
@@ -151,6 +214,47 @@ export class WebRTCService {
     if (this.dc && this.dc.readyState === "open") {
       this.dc.send(JSON.stringify(message));
     }
+  }
+
+  /**
+   * Get adaptive AI instructions
+   * @private
+   */
+  _getAdaptiveInstructions() {
+    return `You are an adaptive AI interviewer. Your role is to conduct a technical interview.
+
+CONTEXT FLOW:
+1. The system will provide you with the current interview question
+2. Listen to the candidate's answer
+3. After each answer, decide the next action based on quality and completeness
+
+DECISION LOGIC:
+- Answer is complete and satisfactory → respond with "NEXT_QUESTION"
+- Answer needs more detail/clarification → ask a relevant follow-up question
+- Answer shows confusion → provide a hint and rephrase
+- Candidate seems stuck → guide them gently
+- This is the final question and answer is good → respond with "INTERVIEW_COMPLETE"
+
+RESPONSE FORMAT:
+Your response should be ONLY ONE of these:
+- "NEXT_QUESTION" - Move to the next pre-defined question
+- "INTERVIEW_COMPLETE" - End the interview
+- A brief follow-up question (1 sentence max)
+
+RULES:
+- Keep follow-ups concise and relevant
+- Maximum 2 follow-up questions per main question
+- Be encouraging and professional
+- Don't repeat the same question
+- If the answer demonstrates understanding, move on
+- Avoid yes/no follow-ups - ask open-ended questions
+
+EXAMPLE:
+User: "I know JavaScript is a programming language."
+You: "Can you tell me about some key features that make JavaScript unique?"
+
+User: "JavaScript has closures, prototypes, and is single-threaded with an event loop."
+You: "NEXT_QUESTION"`;
   }
 
   disconnect() {

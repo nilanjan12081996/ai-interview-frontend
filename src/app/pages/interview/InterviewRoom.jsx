@@ -472,6 +472,8 @@ const InterviewRoom = () => {
   const [status, setStatus] = useState("waiting");
   const [displayIndex, setDisplayIndex] = useState(-1);
   const [uploadProgress, setUploadProgress] = useState("");
+  const [aiResponseText, setAiResponseText] = useState(""); // For follow-up questions
+  const [isFollowUp, setIsFollowUp] = useState(false); // Track if current Q is a follow-up
 
   useEffect(() => {
     if (allquestions?.length > 0) allquestionsRef.current = allquestions;
@@ -505,6 +507,100 @@ const InterviewRoom = () => {
   /* ─────────────────────────────────────────────────────────────────
      SETUP: Step 2 — Screen share
   ───────────────────────────────────────────────────────────────── */
+
+  /* ─────────────────────────────────────────────────────────────────
+     HELPER: Extract AI response text from various message formats
+  ───────────────────────────────────────────────────────────────── */
+  const extractAIResponseText = useCallback((msg) => {
+    // Handle response.done with output
+    if (msg.type === "response.done" && msg.response?.output) {
+      for (const item of msg.response.output) {
+        if (item.type === "conversation.item.create" &&
+            item.item?.type === "message" &&
+            item.item?.role === "assistant") {
+          for (const content of item.item.content || []) {
+            if (content.type === "text" || content.type === "input_text") {
+              return content.text?.trim() || "";
+            }
+          }
+        }
+      }
+    }
+    // Handle conversation.item.completed (assistant message)
+    if (msg.type === "conversation.item.completed" &&
+        msg.item?.type === "message" &&
+        msg.item?.role === "assistant") {
+      for (const content of msg.item.content || []) {
+        if (content.type === "text" || content.type === "input_text") {
+          return content.text?.trim() || "";
+        }
+      }
+    }
+    return "";
+  }, []);
+
+  /* ─────────────────────────────────────────────────────────────────
+     Adaptive AI: Move to next question
+  ───────────────────────────────────────────────────────────────── */
+  const moveToNextQuestion = useCallback(() => {
+    const questions = allquestionsRef.current;
+    if (!questions?.length) return;
+
+    console.log("➡️ Moving to next question");
+
+    if (currentIndexRef.current === -1) {
+      // Introduction done → first question
+      currentIndexRef.current = 0;
+      askQuestion(0);
+    } else {
+      const next = currentIndexRef.current + 1;
+      currentIndexRef.current = next;
+      webrtcRef.current?.resetFollowUpCount();
+      setIsFollowUp(false);
+      setAiResponseText("");
+
+      if (next < questions.length) {
+        askQuestion(next);
+      } else {
+        finishInterview();
+      }
+    }
+  }, [askQuestion, finishInterview]);
+
+  /* ─────────────────────────────────────────────────────────────────
+     Adaptive AI: Handle AI follow-up question
+  ───────────────────────────────────────────────────────────────── */
+  const handleAIFollowUp = useCallback((aiText) => {
+    console.log("🔄 AI follow-up:", aiText);
+    setIsFollowUp(true);
+    setAiResponseText(aiText);
+    webrtcRef.current?.incrementFollowUp();
+
+    // Check if we've hit max follow-ups
+    const followUpCount = webrtcRef.current?.getFollowUpCount() || 0;
+    const maxFollowUps = webrtcRef.current?.maxFollowUps || 2;
+
+    if (followUpCount >= maxFollowUps) {
+      // Force move to next question after this follow-up
+      speakThenListen(aiText, () => {
+        // Add a system message to signal next after user responds
+        webrtcRef.current?.send({
+          type: "conversation.item.create",
+          item: {
+            type: "message",
+            role: "system",
+            content: [{ type: "input_text", text: "After this response, move to NEXT_QUESTION regardless of answer quality." }],
+          },
+        });
+      });
+    } else {
+      speakThenListen(aiText);
+    }
+  }, [speakThenListen]);
+
+  /* ─────────────────────────────────────────────────────────────────
+     SETUP: Step 2 — Screen share
+  ───────────────────────────────────────────────────────────────── */
   const handleRequestScreen = async () => {
     setSetupError("");
     const result = await recordingRef.current.requestScreen();
@@ -534,6 +630,16 @@ const InterviewRoom = () => {
     if (!questions?.[index]) return;
     console.log(`📢 Q${index + 1}/${questions.length}: ${questions[index].question}`);
     setDisplayIndex(index);
+    setIsFollowUp(false);
+    setAiResponseText("");
+
+    // Set question context for AI analysis
+    webrtcRef.current?.setCurrentQuestion(
+      questions[index].question,
+      index,
+      questions.length
+    );
+
     speakThenListen(questions[index].question);
   }, [speakThenListen]);
 
@@ -594,23 +700,57 @@ const InterviewRoom = () => {
 
   const handleMessage = useCallback((msg) => {
     if (!msg) return;
+
+    console.log("📨 Message type:", msg.type);
+
+    // Session ready → send greeting via browser TTS
     if (msg.type === "session.updated" && !sessionReadyRef.current) {
       sessionReadyRef.current = true;
+      console.log("✅ Session ready → greeting");
       sendGreeting();
       return;
     }
-    if (msg.type === "response.created" || msg.type === "response.output_item.added") {
-      webrtcRef.current?.suppressAIResponse();
-      return;
-    }
+
+    // VAD: User finished speaking, Whisper transcription complete
+    // Now we WAIT for AI to decide what to do (follow-up or next)
     if (msg.type === "conversation.item.input_audio_transcription.completed") {
-      if (isAISpeakingRef.current) return;
+      if (isAISpeakingRef.current) {
+        console.log("⏭ Ignoring transcript — AI still speaking");
+        return;
+      }
       const transcript = msg.transcript?.trim();
       if (!transcript) return;
+      console.log("🎙 Transcript:", transcript);
       setStatus("processing");
-      setTimeout(() => handleUserFinishedSpeaking(), 400);
+      // DON'T auto-advance anymore - wait for AI response!
+      return;
     }
-  }, [sendGreeting, handleUserFinishedSpeaking]);
+
+    // AI generated a response - check if it's a follow-up or signal to move next
+    if (msg.type === "response.done" || msg.type === "conversation.item.completed") {
+      const aiText = extractAIResponseText(msg);
+      if (!aiText) return;
+
+      console.log("🤖 AI Response:", aiText);
+
+      // Check for control signals
+      if (aiText.includes("NEXT_QUESTION")) {
+        moveToNextQuestion();
+        return;
+      }
+      if (aiText.includes("INTERVIEW_COMPLETE")) {
+        finishInterview();
+        return;
+      }
+
+      // Otherwise, it's a follow-up question - ask it!
+      handleAIFollowUp(aiText);
+      return;
+    }
+
+    // Optionally: log other message types for debugging
+    // console.log("ℹ️ Unhandled message type:", msg.type);
+  }, [sendGreeting, extractAIResponseText, moveToNextQuestion, finishInterview, handleAIFollowUp]);
 
   const handleConnectionChange = useCallback((state) => {
     if (state === "failed" || state === "disconnected") {
@@ -829,7 +969,7 @@ const InterviewRoom = () => {
           <div className="p-8 md:p-10">
             <div className="flex items-center justify-between mb-6">
               <span className="text-slate-500 text-sm tracking-wide">
-                {displayIndex === -1 ? "Introduction" : `Question ${displayIndex + 1} of ${questionCount}`}
+                {displayIndex === -1 ? "Introduction" : isFollowUp ? `Follow-up for Question ${displayIndex + 1}` : `Question ${displayIndex + 1} of ${questionCount}`}
               </span>
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${currentStatus.dot}`} />
@@ -838,11 +978,17 @@ const InterviewRoom = () => {
             </div>
 
             <div className="rounded-2xl p-6 mb-8 min-h-[120px] flex items-center justify-center text-center"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              style={{ background: "rgba(255,255,255,0.04)", border: isFollowUp ? "1px solid rgba(234,179,8,0.3)" : "1px solid rgba(255,255,255,0.06)" }}>
               <p className="text-white/90 text-lg leading-relaxed font-light">
                 {status === "connecting" ? "Establishing secure connection..."
                   : status === "uploading" ? (uploadProgress || "Saving your interview...")
                   : displayIndex === -1 ? "Please introduce yourself to the interviewer."
+                  : isFollowUp && aiResponseText ? (
+                    <>
+                      <span className="text-amber-400 text-sm block mb-2">🔄 Follow-up Question</span>
+                      {aiResponseText}
+                    </>
+                    )
                   : allquestions?.[displayIndex]?.question || "Preparing next question..."}
               </p>
             </div>
@@ -885,7 +1031,7 @@ const InterviewRoom = () => {
         </div>
 
         <p className="text-center text-slate-600 text-xs mt-6 tracking-wide">
-          🔴 Recording in progress · Browser TTS · OpenAI Whisper VAD
+          🔴 Recording in progress · Adaptive AI Interviewer · Browser TTS · OpenAI Whisper VAD
         </p>
       </div>
 
