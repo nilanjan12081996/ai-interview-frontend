@@ -17,6 +17,7 @@ import { RiDeleteBin2Line } from "react-icons/ri";
 import JobEditModal from "./Modals/JobEditModal"
 import JobDeleteModal from "./Modals/JobDeleteModal"
 import { useNavigate } from "react-router"
+import JdModalView from "./Modals/JdModalView"
 export function Jobs() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const[inviteModalOpen,setInviteModalOpen]=useState(false)
@@ -26,6 +27,8 @@ export function Jobs() {
   const{allJobs}=useSelector((state)=>state?.jobs)
   const dispatch=useDispatch()
   const navigate=useNavigate()
+  const[showJdModal,setShowJdModal]=useState(false)
+  const[showJd,setShowJd]=useState("")
   // const jobs = [
   //   { id: 1, client: "Amazon", role: "Full-stack Engineer", date: "2023-10-25", candidates: 12 },
   //   { id: 2, client: "Uber", role: "Backend Developer", date: "2023-10-24", candidates: 8 },
@@ -63,6 +66,11 @@ export function Jobs() {
   const handleDeleteModal=(id)=>{
       setJobId(id)
       setOpenDeleteModal(true)
+  }
+
+  const handleJdShow=(jd)=>{
+    setShowJdModal(true)
+    setShowJd(jd)
   }
   return (
     <div className="space-y-6">
@@ -103,6 +111,15 @@ export function Jobs() {
                 />
               )
             }
+            {
+              showJdModal&&(
+                <JdModalView
+                showJdModal={showJdModal}
+                setShowJdModal={setShowJdModal}
+                showJd={showJd}
+                />
+              )
+            }
       </div>
 
       <Card>
@@ -116,6 +133,9 @@ export function Jobs() {
                 <TableHead>Client Name</TableHead>
                 <TableHead>Role</TableHead>
                  <TableHead>Job Description</TableHead>
+                 <TableHead>Nice to have Skills</TableHead>
+                 <TableHead>Mandatory Skills</TableHead>
+                  <TableHead>Experience</TableHead>
                   <TableHead>Status</TableHead>
                 <TableHead>Date Added</TableHead>
                 <TableHead>Action</TableHead>
@@ -130,7 +150,31 @@ export function Jobs() {
                 <TableRow key={jobData.id}>
                   <TableCell className="font-medium">{jobData.clientName}</TableCell>
                   <TableCell>{jobData.role}</TableCell>
-                  <TableCell className="whitespace-pre-line">{jobData.jd}</TableCell>
+                  <TableCell className="whitespace-pre-line max-w-[900px]">
+                    <div className={`overflow-hidden transition-all duration-300`}>
+                    <span>{jobData.jd.slice(0, 100)}...</span>
+                  <Button onClick={()=>{handleJdShow(jobData.jd)}} className="text-blue-950">read more</Button>  
+                    </div>
+                    </TableCell>
+                    <TableCell>{jobData?.mustHaveSkills?.map((skills)=>{
+                      return(
+                        <>
+                         {skills?.skillName}<br/>
+                        </>
+                      )
+                     
+                    })}</TableCell>
+                     <TableCell>{jobData?.mandatorySkills?.map((skills)=>{
+                      return(
+                        <>
+                         {skills?.skillName}<br/>
+                        </>
+                      )
+                     
+                    })}</TableCell>
+                    <TableCell>
+                      {jobData.experience}
+                    </TableCell>
                     <TableCell className="whitespace-pre-line">
 
                        <div className="flex items-center gap-2">

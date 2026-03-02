@@ -108,7 +108,7 @@ const [open, setOpen] = useState(false);
                     className="h-8 w-8 text-[#800080]"
                     onClick={async () => {
                       try {
-                        const fileUrl = `http://localhost:8085/${candidate.resumeLink}`;
+                        const fileUrl = `https://aiinterviewagent.bestworks.cloud/${candidate.resumeLink}`;
                         
                         const response = await fetch(fileUrl);
                         const blob = await response.blob();
@@ -134,7 +134,7 @@ const [open, setOpen] = useState(false);
                     size="sm"
                     className="h-8 w-8 text-[#800080]"
                     onClick={() => {
-                                const fileUrl = `http://localhost:8085/${candidate.resumeLink}`;
+                                const fileUrl = `https://aiinterviewagent.bestworks.cloud/${candidate.resumeLink}`;
                                 window.open(fileUrl, "_blank");
                             }}
                   >

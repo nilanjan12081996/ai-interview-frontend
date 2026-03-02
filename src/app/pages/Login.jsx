@@ -72,7 +72,7 @@ dispatch(login(data)).then((res)=>{
             <Select {...register("role",{required:"Role is required"})}>
               <option value="">Select</option>
               <option value="superadmin">Superadmin</option>
-              <option value="hr">HR</option>
+              <option value="hr">Recruiter</option>
             </Select>
             {
              errors?.role&&(
