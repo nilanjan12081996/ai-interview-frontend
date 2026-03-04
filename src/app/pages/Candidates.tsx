@@ -52,10 +52,44 @@ export function Candidates() {
   const{candidatesList}=useSelector((state)=>state?.candidate)
   const [shareLink, setShareLink] = useState(null);
 const [open, setOpen] = useState(false);
+const baseUrl="http://localhost:8085"
   const dispatch=useDispatch()
   useEffect(()=>{
     dispatch(getCandidateData())
   },[])
+
+
+const handleDownload = async (fileUrl) => {
+  if (!fileUrl) {
+    alert("No transcription available");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}${fileUrl}`);
+
+    if (!response.ok) {
+      throw new Error("File download failed");
+    }
+
+    const blob = await response.blob();
+
+    const downloadUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = "Interview_Transcript.txt"; // file name
+    document.body.appendChild(link);
+    link.click();
+
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+
+  } catch (error) {
+    console.error("Download error:", error);
+    alert("Failed to download transcription");
+  }
+};
   return (
     <div className="space-y-6">
       <ToastContainer/>
@@ -83,6 +117,7 @@ const [open, setOpen] = useState(false);
                 <TableHead>Interview Date</TableHead>
                 <TableHead>Interview Timing</TableHead>
                 <TableHead>Resources</TableHead>
+                 <TableHead>Report</TableHead>
                 <TableHead>Recruiter</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -192,7 +227,9 @@ const [open, setOpen] = useState(false);
                       >
                         <Video className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500" title="Transcription">
+                      <Button
+                      onClick={() => handleDownload(candidate.transcription)}
+                       variant="ghost" size="icon" className="h-8 w-8 text-gray-500" title="Transcription">
                         <FileText className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-green-500" title="Feedback">
@@ -203,6 +240,18 @@ const [open, setOpen] = useState(false);
                       </Button>
                     </div>
                   </TableCell>
+                  <TableCell>
+                   {candidate.analysis && (
+                    <Button
+                      className="bg-[#800080] text-white"
+                      onClick={() =>
+                        window.open(`http://localhost:8085${candidate.analysis}`, "_blank")
+                      }
+                    >
+                      View Report
+                    </Button>
+                  )}
+                    </TableCell>
                   <TableCell>{candidate.recruiter}</TableCell>
                   <TableCell>
                     <Badge variant={

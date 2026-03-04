@@ -10,9 +10,13 @@ import { getCandidateByJob } from "../Reducer/JobSlice"
 import { useLocation } from "react-router"
 import InterviewModal from "./Modals/InterviewModal"
 import { IoMdEye } from "react-icons/io"
+import LinkModal from "./Modals/LinkModal"
 const CandidateByJob=()=>{
+  const baseUrl="http://localhost:8085";
     const{candidateByJobData}=useSelector((state)=>state?.jobs)
      const[inviteModalOpen,setInviteModalOpen]=useState(false)
+      const [shareLink, setShareLink] = useState(null);
+      const [open, setOpen] = useState(false);
     const location=useLocation()
     const id=location?.state?.id
     const dispatch=useDispatch()
@@ -25,7 +29,39 @@ const CandidateByJob=()=>{
         setInviteModalOpen(true)
 
     }
-    
+    console.log("candidateByJobData",candidateByJobData)
+
+  const handleDownload = async (fileUrl) => {
+  if (!fileUrl) {
+    alert("No transcription available");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}${fileUrl}`);
+
+    if (!response.ok) {
+      throw new Error("File download failed");
+    }
+
+    const blob = await response.blob();
+
+    const downloadUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = "Interview_Transcript.txt"; // file name
+    document.body.appendChild(link);
+    link.click();
+
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+
+  } catch (error) {
+    console.error("Download error:", error);
+    alert("Failed to download transcription");
+  }
+};
     return(
         <>
         <div className="space-y-6">
@@ -56,6 +92,7 @@ const CandidateByJob=()=>{
                         <TableHead>Interview Date</TableHead>
                         <TableHead>Interview Timing</TableHead>
                         <TableHead>Resources</TableHead>
+                        <TableHead>Report</TableHead>
                         <TableHead>Recruiter</TableHead>
                         {/* <TableHead>Status</TableHead> */}
                         <TableHead className="text-right">Actions</TableHead>
@@ -122,7 +159,7 @@ const CandidateByJob=()=>{
                            <TableCell>{candidate.startTime}-{candidate.endTime}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" title="Interview Link"
+                              {/* <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" title="Interview Link"
                                onClick={() => window.open(candidate.interviewLink, "_blank")}
                               >
                                 <LinkIcon className="h-4 w-4" />
@@ -137,8 +174,39 @@ const CandidateByJob=()=>{
                               }}
                               variant="ghost" size="icon" className="h-8 w-8 text-red-500" title="Recording">
                                 <Video className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500" title="Transcription">
+                              </Button> */}
+
+                                 <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-blue-500"
+                            title="Interview Link"
+                            onClick={() => {
+                              setShareLink(candidate.interviewLink);
+                              setOpen(true);
+                            }}
+                          >
+                            <LinkIcon className="h-4 w-4" />
+                          </Button>
+                            <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-500"
+                        title="Recording"
+                        onClick={() => {
+                          if (candidate.videoLink) {
+                            setShareLink(candidate.videoLink);
+                            setOpen(true);
+                          } else {
+                            alert("Recording not available yet");
+                          }
+                        }}
+                      >
+                        <Video className="h-4 w-4" />
+                        </Button>
+                              <Button 
+                               onClick={() => handleDownload(candidate.transcription)}
+                              variant="ghost" size="icon" className="h-8 w-8 text-gray-500" title="Transcription">
                                 <FileText className="h-4 w-4" />
                               </Button>
                               <Button variant="ghost" size="icon" className="h-8 w-8 text-green-500" title="Feedback">
@@ -149,6 +217,18 @@ const CandidateByJob=()=>{
                               </Button>
                             </div>
                           </TableCell>
+                            <TableCell>
+                        {candidate.analysis && (
+                          <Button
+                            className="bg-[#800080] text-white"
+                            onClick={() =>
+                              window.open(`http://localhost:8085${candidate.analysis}`, "_blank")
+                            }
+                          >
+                            View Report
+                          </Button>
+                        )}
+                    </TableCell>
                           <TableCell>{candidate.recruiter}</TableCell>
                           {/* <TableCell>
                             <Badge variant={
@@ -179,6 +259,16 @@ const CandidateByJob=()=>{
           />
         )
       }
+
+      {
+              open&&(
+                <LinkModal
+                open={open}
+                setOpen={setOpen}
+                shareLink={shareLink}
+                />
+              )
+            }
             </div>
         </>
     )
