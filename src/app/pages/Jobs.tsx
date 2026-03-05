@@ -137,7 +137,7 @@ export function Jobs() {
                  <TableHead>Mandatory Skills</TableHead>
                   <TableHead>Experience</TableHead>
                   <TableHead>Status</TableHead>
-                <TableHead>Date Added</TableHead>
+                <TableHead style={{width:"100px"}}>Date Added</TableHead>
                 <TableHead>Action</TableHead>
                 <TableHead>&nbsp;</TableHead>
                 <TableHead>&nbsp;</TableHead>

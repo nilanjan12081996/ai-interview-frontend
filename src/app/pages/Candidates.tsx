@@ -114,7 +114,7 @@ const handleDownload = async (fileUrl) => {
                 <TableHead>Resume</TableHead>
                 {/* <TableHead>Date Added</TableHead> */}
                 <TableHead>Client Name</TableHead>
-                <TableHead>Interview Date</TableHead>
+                <TableHead style={{width:"250px", textAlign:"center"}}>Interview Date</TableHead>
                 <TableHead>Interview Timing</TableHead>
                 <TableHead>Resources</TableHead>
                  <TableHead>Report</TableHead>
@@ -136,7 +136,7 @@ const handleDownload = async (fileUrl) => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div>
+                    <div className="flex">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -178,7 +178,7 @@ const handleDownload = async (fileUrl) => {
                   </div>
                   </TableCell>
                   <TableCell>{candidate.jobName}</TableCell>
-                  <TableCell>{candidate.interviewDate}</TableCell>
+                  <TableCell >{candidate.interviewDate}</TableCell>
                    <TableCell>{candidate.startTime}-{candidate.endTime}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
