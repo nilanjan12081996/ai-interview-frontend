@@ -88,7 +88,7 @@ const CandidateByJob=()=>{
                         <TableHead>Contact</TableHead>
                         <TableHead>Resume</TableHead>
                         {/* <TableHead>Date Added</TableHead> */}
-                        <TableHead>Job</TableHead>
+                        <TableHead>Client Name</TableHead>
                         <TableHead>Interview Date</TableHead>
                         <TableHead>Interview Timing</TableHead>
                         <TableHead>Resources</TableHead>
@@ -106,8 +106,8 @@ const CandidateByJob=()=>{
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-col text-xs text-gray-500">
-                              <span>{candidate.email}</span>
-                              <span>{candidate.phoneNumber}</span>
+                              <span>{candidate.candidateEmail}</span>
+                              <span>{candidate.candidatePhone}</span>
                             </div>
                           </TableCell>
                           <TableCell>
