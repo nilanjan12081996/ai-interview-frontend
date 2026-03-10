@@ -9,6 +9,7 @@ import { HRManagement } from "./pages/HRManagement"
 import ProtectedRoute from "./components/ProtectedRoute"
 import InterviewRoom from "./pages/interview/InterviewRoom"
 import CandidateByJob from "./pages/CandidateByJob"
+import Setting from "./pages/Setting"
 
 const RoutesConfig = [
   // =========================
@@ -82,11 +83,8 @@ const RoutesConfig = [
       // Optional Settings Page
       {
         path: "settings",
-        element: (
-          <div className="p-4 text-center text-gray-500">
-            Settings page placeholder
-          </div>
-        ),
+        element: <Setting/>,
+
       },
     ],
   },

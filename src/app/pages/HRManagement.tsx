@@ -22,6 +22,9 @@ export function HRManagement() {
   const dispatch=useDispatch()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [users, setUsers] = useState(hrUsers)
+  const user_type=sessionStorage.getItem("role")
+  console.log("user_type",user_type);
+  
 
   useEffect(()=>{
     dispatch(getHrUser())
@@ -44,13 +47,20 @@ const toggleStatus = (id) => {
       <ToastContainer/>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Recruiter Management</h2>
-                <Button
+        {
+          user_type==="SUPER_ADMIN"&&(
+            <>
+            <Button
                   className="bg-[#800080] hover:bg-[#660066] text-white"
                   onClick={() => setIsModalOpen(true)}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Recruiter
                 </Button>
+            </>
+          )
+        }
+                
      
           {
             isModalOpen&&(

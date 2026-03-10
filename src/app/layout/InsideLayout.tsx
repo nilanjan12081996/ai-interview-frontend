@@ -206,11 +206,15 @@ export function InsideLayout() {
   const navigate = useNavigate()
   const location = useLocation()
 const dispatch=useDispatch()
+ const user_type=sessionStorage.getItem("role")
   const navItems = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/jobs", label: "Jobs", icon: Briefcase },
     { path: "/candidates", label: "Candidates", icon: Users },
-    { path: "/hr", label: "Recruiter Management", icon: UserCog },
+    // { path: "/hr", label: "Recruiter Management", icon: UserCog },
+     ...(user_type === "SUPER_ADMIN"
+    ? [{ path: "/hr", label: "Recruiter Management", icon: UserCog }]
+    : []),
     { path: "/settings", label: "Settings", icon: Settings },
   ]
 

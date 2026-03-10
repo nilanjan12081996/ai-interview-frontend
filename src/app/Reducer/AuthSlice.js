@@ -38,6 +38,26 @@ export const hrLogin = createAsyncThunk(
     }
 )
 
+export const resetPassword = createAsyncThunk(
+    'auth/resetPassword',
+    async (userInput, { rejectWithValue }) => {
+
+        try {
+            const response = await api.post('/reset/password', userInput);
+            if (response?.data?.statusCode === 200) {
+                return response.data;
+            } else {
+                return rejectWithValue(response.data);
+            }
+        } catch (err) {
+            // let errors = errorHandler(err);
+            return rejectWithValue(err);
+        }
+    }
+)
+
+
+
 
 //init state
 
@@ -49,6 +69,7 @@ const initialState = {
     currentUser: {},
     subdomain: [],
     loadingLogin: false,
+    resetPasswordData:""
 }
 
 
@@ -136,6 +157,18 @@ const AuthSlice = createSlice(
                         response !== undefined && response
                             ? response
                             : 'Something went wrong. Try again later.';
+                })
+                .addCase(resetPassword.pending,(state)=>{
+                    state.loading=true
+                })
+                .addCase(resetPassword.fulfilled,(state,{payload})=>{
+                    state.loading=false
+                    state.resetPasswordData=payload
+                    state.error=false
+                })
+                .addCase(resetPassword.rejected,(state,{payload})=>{
+                    state.loading=false
+                    state.error=payload
                 })
                 
         }

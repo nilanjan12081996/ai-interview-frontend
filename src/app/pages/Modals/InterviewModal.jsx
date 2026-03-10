@@ -3,7 +3,7 @@ import { Button, FileInput, TextInput, ToggleSwitch } from "flowbite-react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/Dialog"
 import DatePicker from "react-datepicker";
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { scheduleInterview } from "../../Reducer/CandidateSlice";
 import { toast } from "react-toastify";
 import { useState } from "react";
@@ -15,6 +15,7 @@ const InterviewModal=({
     jobid
 })=>{
 const dispatch=useDispatch()
+const {loading}=useSelector((state)=>state?.candidate)
 const [selectedFile, setSelectedFile] = useState(null);
 const [isCoding, setIsCoding] = useState(false);
 
@@ -302,7 +303,7 @@ const [isCoding, setIsCoding] = useState(false);
           type="submit"
           className="bg-[#800080] hover:bg-[#660066]"
         >
-          Send Invitation
+        {loading?"Waiting...":"Send Invitation"}  
         </Button>
       </DialogFooter>
     </form>
