@@ -7,10 +7,12 @@ import { Badge } from "../components/ui/Badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table"
 import { useDispatch, useSelector } from "react-redux"
 import { useEffect, useState } from "react"
-import { getCandidateData } from "../Reducer/CandidateSlice"
+import { getCandidateData, reScheduleInterview } from "../Reducer/CandidateSlice"
 import { IoMdEye } from "react-icons/io"
 import LinkModal from "./Modals/LinkModal"
-import { ToastContainer } from "react-toastify"
+import { toast, ToastContainer } from "react-toastify"
+import { MdDesktopAccessDisabled } from "react-icons/md"
+import AccessDeniedModal from "./Modals/AccessDeniedModal"
 
 const candidates = [
   {
@@ -51,15 +53,57 @@ const candidates = [
 export function Candidates() {
   const{candidatesList}=useSelector((state)=>state?.candidate)
   const [shareLink, setShareLink] = useState(null);
-const [open, setOpen] = useState(false);
-const baseUrl="http://localhost:8085"
+  const [open, setOpen] = useState(false);
+  const[accessDeniedModal,setAccessDeniedModal]=useState(false)
+  const[causeData,setCauseData]=useState()
+  const baseUrl="http://localhost:8085"
+//const baseUrl="https://aiinterviewagent.bestworks.cloud"
   const dispatch=useDispatch()
   useEffect(()=>{
     dispatch(getCandidateData())
   },[])
 
+  const handleRescheduleInterview=(id)=>{
+    dispatch(reScheduleInterview({id:id})).then((res)=>{
+      if(res?.payload?.statusCode===200){
+        toast.success(res?.payload?.message)
+      }
+    })
+  }
 
-const handleDownload = async (fileUrl) => {
+// const handleDownload = async (fileUrl) => {
+//   if (!fileUrl) {
+//     alert("No transcription available");
+//     return;
+//   }
+
+//   try {
+//     const response = await fetch(`${baseUrl}${fileUrl}`);
+
+//     if (!response.ok) {
+//       throw new Error("File download failed");
+//     }
+
+//     const blob = await response.blob();
+
+//     const downloadUrl = window.URL.createObjectURL(blob);
+
+//     const link = document.createElement("a");
+//     link.href = downloadUrl;
+//     link.download = "Interview_Transcript.txt"; // file name
+//     document.body.appendChild(link);
+//     link.click();
+
+//     link.remove();
+//     window.URL.revokeObjectURL(downloadUrl);
+
+//   } catch (error) {
+//     console.error("Download error:", error);
+//     alert("Failed to download transcription");
+//   }
+// };
+  
+const handleViewInNewTab = async (fileUrl) => {
   if (!fileUrl) {
     alert("No transcription available");
     return;
@@ -69,28 +113,36 @@ const handleDownload = async (fileUrl) => {
     const response = await fetch(`${baseUrl}${fileUrl}`);
 
     if (!response.ok) {
-      throw new Error("File download failed");
+      throw new Error("File fetch failed");
     }
 
     const blob = await response.blob();
 
-    const downloadUrl = window.URL.createObjectURL(blob);
+    // 1. Create a new Blob with an explicit MIME type (e.g., text/plain)
+    // This ensures the browser tries to display it instead of downloading it.
+    const viewableBlob = new Blob([blob], { type: "text/plain" });
 
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.download = "Interview_Transcript.txt"; // file name
-    document.body.appendChild(link);
-    link.click();
+    // 2. Create the URL
+    const viewUrl = window.URL.createObjectURL(viewableBlob);
 
-    link.remove();
-    window.URL.revokeObjectURL(downloadUrl);
+    // 3. Open in a new tab
+    window.open(viewUrl, "_blank");
 
+    // Note: We don't revoke the URL immediately because the new tab 
+    // needs time to load it. The browser will clean it up when the 
+    // current session ends, or you can manage it with a timeout.
   } catch (error) {
-    console.error("Download error:", error);
-    alert("Failed to download transcription");
+    console.error("View error:", error);
+    alert("Failed to open transcription");
   }
 };
-  return (
+
+const handleOpenAccessDenied=(data)=>{
+setAccessDeniedModal(true)
+setCauseData(data)
+}
+
+return (
     <div className="space-y-6">
       <ToastContainer/>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -110,15 +162,17 @@ const handleDownload = async (fileUrl) => {
             <TableHeader>
               <TableRow>
                 <TableHead>Candidate</TableHead>
-                <TableHead>Contact</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
                 <TableHead>Resume</TableHead>
                 {/* <TableHead>Date Added</TableHead> */}
                 <TableHead>Client Name</TableHead>
                 <TableHead style={{width:"250px", textAlign:"center"}}>Interview Date</TableHead>
                 <TableHead>Interview Timing</TableHead>
+                 <TableHead>Interview Status</TableHead>
                 <TableHead>Resources</TableHead>
                  <TableHead>Report</TableHead>
-                <TableHead>Recruiter</TableHead>
+                <TableHead>Resend Link</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -132,6 +186,12 @@ const handleDownload = async (fileUrl) => {
                   <TableCell>
                     <div className="flex flex-col text-xs text-gray-500">
                       <span>{candidate.candidateEmail}</span>
+                    
+                    </div>
+                  </TableCell>
+                   <TableCell>
+                    <div className="flex flex-col text-xs text-gray-500">
+             
                       <span>{candidate.candidatePhone}</span>
                     </div>
                   </TableCell>
@@ -143,7 +203,7 @@ const handleDownload = async (fileUrl) => {
                     className="h-8 w-8 text-[#800080]"
                     onClick={async () => {
                       try {
-                        const fileUrl = `https://aiinterviewagent.bestworks.cloud/${candidate.resumeLink}`;
+                        const fileUrl = `${baseUrl}/${candidate.resumeLink}`;
                         
                         const response = await fetch(fileUrl);
                         const blob = await response.blob();
@@ -169,7 +229,7 @@ const handleDownload = async (fileUrl) => {
                     size="sm"
                     className="h-8 w-8 text-[#800080]"
                     onClick={() => {
-                                const fileUrl = `https://aiinterviewagent.bestworks.cloud/${candidate.resumeLink}`;
+                                const fileUrl = `${baseUrl}/${candidate.resumeLink}`;
                                 window.open(fileUrl, "_blank");
                             }}
                   >
@@ -180,6 +240,7 @@ const handleDownload = async (fileUrl) => {
                   <TableCell>{candidate.jobName}</TableCell>
                   <TableCell >{candidate.interviewDate}</TableCell>
                    <TableCell>{candidate.startTime}-{candidate.endTime}</TableCell>
+                     <TableCell>{candidate.is_complete===1?"Complete":"Incomplete"}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       {/* <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" title="Interview Link"
@@ -228,7 +289,8 @@ const handleDownload = async (fileUrl) => {
                         <Video className="h-4 w-4" />
                       </Button>
                       <Button
-                      onClick={() => handleDownload(candidate.transcription)}
+                      // onClick={() => handleDownload(candidate.transcription)}
+                      onClick={() => window.open(`${baseUrl}${candidate.transcription}`, '_blank')}
                        variant="ghost" size="icon" className="h-8 w-8 text-gray-500" title="Transcription">
                         <FileText className="h-4 w-4" />
                       </Button>
@@ -238,6 +300,11 @@ const handleDownload = async (fileUrl) => {
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-purple-500" title="Coding Assessment">
                         <Code className="h-4 w-4" />
                       </Button>
+                      <Button 
+                      onClick={()=>handleOpenAccessDenied(candidate)}
+                      variant="ghost" size="icon" className="h-8 w-8 text-purple-500" title="Coding Assessment">
+                      <MdDesktopAccessDisabled className="h-4 w-4" />
+                    </Button>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -245,14 +312,23 @@ const handleDownload = async (fileUrl) => {
                     <Button
                       className="bg-[#800080] text-white"
                       onClick={() =>
-                        window.open(`http://localhost:8085${candidate.analysis}`, "_blank")
+                        window.open(`${baseUrl}${candidate.analysis}`, "_blank")
                       }
                     >
                       View Report
                     </Button>
                   )}
                     </TableCell>
-                  <TableCell>{candidate.recruiter}</TableCell>
+                  <TableCell>
+                      <Button
+                      className="bg-[#800080] text-white"
+                      onClick={() =>
+                        handleRescheduleInterview(candidate.id)
+                      }
+                    >
+                      Resend
+                    </Button>
+                  </TableCell>
                   <TableCell>
                     <Badge variant={
                       candidate.status === "Completed" ? "success" :
@@ -282,6 +358,16 @@ const handleDownload = async (fileUrl) => {
           />
         )
       }
+       {
+                  accessDeniedModal&&(
+                    <AccessDeniedModal
+                    accessDeniedModal={accessDeniedModal}
+                    setAccessDeniedModal={setAccessDeniedModal}
+                    causeData={causeData}
+                    />
+                  )
+                  
+                  }
     </div>
   )
 }
