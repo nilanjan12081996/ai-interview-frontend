@@ -56,8 +56,8 @@ export function Candidates() {
   const [open, setOpen] = useState(false);
   const[accessDeniedModal,setAccessDeniedModal]=useState(false)
   const[causeData,setCauseData]=useState()
-  const baseUrl="http://localhost:8085"
-//const baseUrl="https://aiinterviewagent.bestworks.cloud"
+  //const baseUrl="http://localhost:8085"
+const baseUrl="https://aiinterviewagent.bestworks.cloud"
   const dispatch=useDispatch()
   useEffect(()=>{
     dispatch(getCandidateData())

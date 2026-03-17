@@ -16,8 +16,8 @@ import { reScheduleInterview } from "../Reducer/CandidateSlice"
 import { toast, ToastContainer } from "react-toastify"
 import AccessDeniedModal from "./Modals/AccessDeniedModal"
 const CandidateByJob=()=>{
-  const baseUrl="http://localhost:8085";
-  //const baseUrl="https://aiinterviewagent.bestworks.cloud";
+  //const baseUrl="http://localhost:8085";
+  const baseUrl="https://aiinterviewagent.bestworks.cloud";
     const{candidateByJobData}=useSelector((state)=>state?.jobs)
      const[inviteModalOpen,setInviteModalOpen]=useState(false)
       const [shareLink, setShareLink] = useState(null);
