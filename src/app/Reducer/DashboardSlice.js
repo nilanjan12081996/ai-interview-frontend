@@ -33,10 +33,27 @@ export const dashboardRecentActivity = createAsyncThunk(
         }
     }
 )
+
+export const dashboardInterviewActivity = createAsyncThunk(
+    'dashboardInterviewActivity',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await api.get('/dashboard/interview-activity');
+            if (response?.data?.statusCode === 200) {
+                return response.data;
+            } else {
+                return rejectWithValue(response.data);
+            }
+        } catch (err) {
+            return rejectWithValue(err);
+        }
+    }
+)
 const initialState = {
     loading: false,
     dashboardData: [],
     recentActivityData: [],
+    interviewActivityData: [],
     error: false
 }
 const DashboardSlice = createSlice({
@@ -65,6 +82,17 @@ const DashboardSlice = createSlice({
                 state.recentActivityData = payload?.data
             })
             .addCase(dashboardRecentActivity.rejected, (state, { payload }) => {
+                state.loading = false
+                state.error = payload
+            })
+            .addCase(dashboardInterviewActivity.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(dashboardInterviewActivity.fulfilled, (state, { payload }) => {
+                state.loading = false
+                state.interviewActivityData = payload?.data
+            })
+            .addCase(dashboardInterviewActivity.rejected, (state, { payload }) => {
                 state.loading = false
                 state.error = payload
             })

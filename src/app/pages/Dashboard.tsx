@@ -13,24 +13,25 @@ import {
 } from "recharts"
 import { useDispatch, useSelector } from "react-redux"
 import { useEffect } from "react"
-import { dashboardCount, dashboardRecentActivity } from "../Reducer/DashboardSlice"
+import { dashboardCount, dashboardRecentActivity, dashboardInterviewActivity } from "../Reducer/DashboardSlice"
 
 const data = [
-  { name: "Mon", interviews: 12 },
-  { name: "Tue", interviews: 19 },
-  { name: "Wed", interviews: 15 },
-  { name: "Thu", interviews: 22 },
-  { name: "Fri", interviews: 28 },
-  { name: "Sat", interviews: 8 },
-  { name: "Sun", interviews: 4 },
+  { name: "Mon", sessions: 12, completed: 12 },
+  { name: "Tue", sessions: 19, completed: 19 },
+  { name: "Wed", sessions: 15, completed: 15 },
+  { name: "Thu", sessions: 22, completed: 22 },
+  { name: "Fri", sessions: 28, completed: 28 },
+  { name: "Sat", sessions: 8, completed: 8 },
+  { name: "Sun", sessions: 4, completed: 4 },
 ]
 
 export function Dashboard() {
-  const { dashboardData, recentActivityData } = useSelector((state: any) => state?.dashboard)
+  const { dashboardData, recentActivityData, interviewActivityData } = useSelector((state: any) => state?.dashboard)
   const dispatch = useDispatch<any>()
   useEffect(() => {
     dispatch(dashboardCount())
     dispatch(dashboardRecentActivity())
+    dispatch(dashboardInterviewActivity())
   }, [dispatch])
 
 
@@ -88,7 +89,7 @@ export function Dashboard() {
           <CardContent className="pl-2">
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data}>
+                <BarChart data={interviewActivityData && interviewActivityData.length > 0 ? interviewActivityData : data}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis
                     dataKey="name"
@@ -109,7 +110,7 @@ export function Dashboard() {
                     contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
                   />
                   <Bar
-                    dataKey="interviews"
+                    dataKey="completed"
                     fill="#800080"
                     radius={[4, 4, 0, 0]}
                     barSize={40}
