@@ -131,17 +131,17 @@ const LandingPage = () => {
           </div>
           <div className="hidden md:flex items-center space-x-10 font-headline font-bold tracking-tight">
             <a className="text-[#D946EF] border-b-2 border-[#D946EF] pb-1 transition-colors duration-300" href="#">Platform</a>
-            <a className="text-on-surface-variant hover:text-[#D946EF] transition-colors duration-300" href="#">Features</a>
+            {/* <a className="text-on-surface-variant hover:text-[#D946EF] transition-colors duration-300" href="#">Features</a>
             <a className="text-on-surface-variant hover:text-[#D946EF] transition-colors duration-300" href="#">Demo</a>
-            <a className="text-on-surface-variant hover:text-[#D946EF] transition-colors duration-300" href="#">Pricing</a>
+            <a className="text-on-surface-variant hover:text-[#D946EF] transition-colors duration-300" href="#">Pricing</a> */}
           </div>
           <div className="flex items-center gap-4">
-            <button 
+            {/* <button 
               onClick={() => setOpenRegisterModal(true)}
               className="hidden md:block text-on-surface-variant hover:text-white font-bold text-sm tracking-tight transition-colors"
             >
               Sign Up
-            </button>
+            </button> */}
             <button 
               onClick={() => setOpenModal(true)}
               className="bg-primary text-on-primary-fixed px-6 py-2.5 rounded-full font-bold text-sm tracking-tight scale-95 active:scale-90 transition-transform hover:shadow-[0_0_20px_rgba(217,70,239,0.4)]"
@@ -174,12 +174,12 @@ const LandingPage = () => {
               >
                 Start Hiring
               </Button>
-              <button 
+              {/* <button 
                 onClick={() => setOpenRegisterModal(true)}
                 className="bg-surface-container-highest text-on-surface px-10 py-5 rounded-full font-bold text-lg border border-outline-variant/20 hover:bg-surface-bright transition-colors"
               >
                 Create Account
-              </button>
+              </button> */}
             </div>
             {/* Floating UI Mockup */}
             <div className="relative max-w-6xl mx-auto">
