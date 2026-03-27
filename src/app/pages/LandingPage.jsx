@@ -6,6 +6,8 @@ import { useDispatch } from "react-redux";
 import { hrLogin, hrRegister, login } from "../Reducer/AuthSlice";
 import { useNavigate } from "react-router";
 
+import talentFoldLogo from "../talentfoldLogo.png";
+
 const LandingPage = () => {
   const [openModal, setOpenModal] = useState(false);
   const [openRegisterModal, setOpenRegisterModal] = useState(false);
@@ -119,15 +121,7 @@ const LandingPage = () => {
       <nav className="fixed top-0 w-full z-50 bg-surface/40 dark:bg-[#0e0e0e]/40 backdrop-blur-xl shadow-[0_40px_40px_0_rgba(168,85,247,0.1)]">
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
           <div className="flex items-center gap-3 text-2xl font-black text-on-surface tracking-tighter font-headline">
-            <div className="relative w-8 h-8 flex items-center justify-center">
-              <svg className="w-full h-full drop-shadow-[0_0_8px_rgba(217,70,239,0.5)]" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 4H20V12H12L8 16V12H4V4Z" fill="#D946EF" fillOpacity="0.1" stroke="#D946EF" strokeWidth="2"></path>
-                <path d="M8 8H16V10H8V8Z" fill="#D946EF"></path>
-                <path d="M8 12H12V14H8V12Z" fill="#D946EF"></path>
-                <path d="M20 4L12 12H20V4Z" fill="#D946EF" fillOpacity="0.3"></path>
-              </svg>
-            </div>
-            Interview<span className="text-[#D946EF]">Fold</span>
+            <img src={talentFoldLogo} alt="TalentFold Logo" className="w-26 h-26 object-contain" />
           </div>
           <div className="hidden md:flex items-center space-x-10 font-headline font-bold tracking-tight">
             <a className="text-[#D946EF] border-b-2 border-[#D946EF] pb-1 transition-colors duration-300" href="#">Platform</a>
@@ -303,7 +297,7 @@ const LandingPage = () => {
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-24">
               <h2 className="font-headline text-4xl md:text-6xl font-bold tracking-tighter mb-4">The Talent Pipeline, Reimagined</h2>
-              <p className="text-on-surface-variant max-w-2xl mx-auto">From sourcing to offer, InterviewFold automates the friction-heavy assessment phase.</p>
+              <p className="text-on-surface-variant max-w-2xl mx-auto">From sourcing to offer, TalentFold automates the friction-heavy assessment phase.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-16 relative">
               {/* Connector line (desktop) */}
@@ -314,7 +308,7 @@ const LandingPage = () => {
                   <span className="material-symbols-outlined text-primary text-4xl">link</span>
                 </div>
                 <h4 className="font-headline text-2xl font-bold mb-4 text-on-surface">1. Send Invites</h4>
-                <p className="text-on-surface-variant text-sm leading-relaxed px-4">From sourcing to offer, InterviewFold automates the friction-heavy assessment phase.</p>
+                <p className="text-on-surface-variant text-sm leading-relaxed px-4">From sourcing to offer, TalentFold automates the friction-heavy assessment phase.</p>
               </div>
               {/* Step 2 */}
               <div className="relative z-10 flex flex-col items-center text-center">
@@ -322,7 +316,7 @@ const LandingPage = () => {
                   <span className="material-symbols-outlined text-secondary text-4xl">video_chat</span>
                 </div>
                 <h4 className="font-headline text-2xl font-bold mb-4 text-on-surface">2. AI Interrogation</h4>
-                <p className="text-on-surface-variant text-sm leading-relaxed px-4">Candidates engage with InterviewFold in a structured but flexible 45-minute technical deep dive.</p>
+                <p className="text-on-surface-variant text-sm leading-relaxed px-4">Candidates engage with TalentFold in a structured but flexible 45-minute technical deep dive.</p>
               </div>
               {/* Step 3 */}
               <div className="relative z-10 flex flex-col items-center text-center">
@@ -330,7 +324,7 @@ const LandingPage = () => {
                   <span className="material-symbols-outlined text-tertiary text-4xl">verified</span>
                 </div>
                 <h4 className="font-headline text-2xl font-bold mb-4 text-on-surface">3. Review &amp; Hire</h4>
-                <p className="text-on-surface-variant text-sm leading-relaxed px-4">From sourcing to offer, InterviewFold automates the friction-heavy assessment phase.</p>
+                <p className="text-on-surface-variant text-sm leading-relaxed px-4">From sourcing to offer, TalentFold automates the friction-heavy assessment phase.</p>
               </div>
             </div>
           </div>
@@ -370,13 +364,7 @@ const LandingPage = () => {
       <footer className="bg-[#000000] w-full py-12 px-8 border-t border-[#494847]/15 relative z-20">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 max-w-7xl mx-auto">
           <div className="flex items-center gap-2 text-xl font-bold text-on-surface-variant font-headline">
-            <div className="w-6 h-6">
-              <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 4H20V12H12L8 16V12H4V4Z" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth="2"></path>
-                <path d="M20 4L12 12H20V4Z" fill="currentColor" fillOpacity="0.3"></path>
-              </svg>
-            </div>
-            Interview<span className="text-[#D946EF]">Fold</span>
+            <img src={talentFoldLogo} alt="TalentFold Logo" className="h-8 w-auto object-contain" />
           </div>
           <div className="flex flex-wrap justify-center gap-8 font-body text-sm uppercase tracking-widest">
             <a className="text-on-surface-variant hover:text-white transition-opacity" href="#">Privacy</a>
@@ -384,7 +372,7 @@ const LandingPage = () => {
             <a className="text-on-surface-variant hover:text-white transition-opacity" href="#">Security</a>
             <a className="text-on-surface-variant hover:text-white transition-opacity" href="#">Contact</a>
           </div>
-          <div className="text-[#D946EF] font-body text-sm uppercase tracking-widest text-center md:text-right">© 2024 InterviewFold. The Future of Hiring.</div>
+          <div className="text-[#D946EF] font-body text-sm uppercase tracking-widest text-center md:text-right">© 2024 TalentFold. The Future of Hiring.</div>
         </div>
       </footer>
 
@@ -394,7 +382,7 @@ const LandingPage = () => {
           <div className="relative p-8">
             <DialogHeader className="mb-8">
               <DialogTitle className="text-3xl font-headline font-bold text-center text-white tracking-tight">
-                Sign in to <span className="text-primary">InterviewFold</span>
+                Sign in to <span className="text-primary">TalentFold</span>
               </DialogTitle>
             </DialogHeader>
             
