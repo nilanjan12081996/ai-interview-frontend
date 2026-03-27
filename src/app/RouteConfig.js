@@ -1,6 +1,7 @@
 import { Navigate } from "react-router"
 import OutsideLayout from "../ui/OutsideLayout"
 import Login from "./pages/Login"
+import LandingPage from "./pages/LandingPage"
 import { InsideLayout } from "./layout/InsideLayout"
 import { Dashboard } from "./pages/Dashboard"
 import { Jobs } from "./pages/Jobs"
@@ -14,6 +15,13 @@ import Coding from "./pages/Coding"
 
 const RoutesConfig = [
   // =========================
+  // LANDING PAGE
+  // =========================
+  {
+    path: "/",
+    element: <LandingPage />,
+  },
+  // =========================
   // OUTSIDE LAYOUT (Auth Pages)
   // =========================
   {
@@ -21,34 +29,21 @@ const RoutesConfig = [
     element: <OutsideLayout />,
     children: [
       {
-        index: true,
-        element: <Navigate to="/login" replace />,
-      },
-      {
         path: "login",
         element: <Login />,
       },
-   
-   
-    
     ],
   },
-
-    {
+  {
     path: "/",
     element: <OutsideLayout />,
     children: [
-  
       {
         path: "interview/:token",
         element: <InterviewRoom />,
       },
-   
-   
-    
     ],
   },
-
   // =========================
   // INSIDE LAYOUT (Protected Pages)
   // =========================
@@ -80,20 +75,16 @@ const RoutesConfig = [
         path: "hr",
         element: <HRManagement />,
       },
-        {
+      {
         path: "coding",
         element: <Coding />,
       },
-
-      // Optional Settings Page
       {
         path: "settings",
-        element: <Setting/>,
-
+        element: <Setting />,
       },
     ],
   },
-
   // =========================
   // 404 Page
   // =========================

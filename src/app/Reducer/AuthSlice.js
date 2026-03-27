@@ -38,6 +38,23 @@ export const hrLogin = createAsyncThunk(
     }
 )
 
+export const hrRegister = createAsyncThunk(
+    'auth/hrRegister',
+    async (userInput, { rejectWithValue }) => {
+
+        try {
+            const response = await api.post('/hr/register', userInput);
+            if (response?.data?.statusCode === 200) {
+                return response.data;
+            } else {
+                return rejectWithValue(response.data);
+            }
+        } catch (err) {
+            return rejectWithValue(err);
+        }
+    }
+)
+
 export const resetPassword = createAsyncThunk(
     'auth/resetPassword',
     async (userInput, { rejectWithValue }) => {

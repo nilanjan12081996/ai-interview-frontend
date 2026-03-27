@@ -373,7 +373,7 @@
 
 
 
-import { Button, Textarea, TextInput } from "flowbite-react";
+import { Button, Select, Textarea, TextInput } from "flowbite-react";
 import {
   Dialog,
   DialogContent,
@@ -458,6 +458,7 @@ const JobEditModal = ({
         experience: singleJob.data.experience || "",
         mandatorySkills: mapSkills(singleJob.data.mandatorySkills),
         mustHaveSkills: mapSkills(singleJob.data.mustHaveSkills),
+        level:singleJob.data.level
       });
     }
   }, [singleJob, reset]);
@@ -588,7 +589,7 @@ const JobEditModal = ({
             {/* Must Have Skills */}
             <div className="grid gap-2">
               <label className="text-sm font-medium">
-                Must Have Skills
+                Nice to Have Skills
               </label>
 
               {mustFields.map((field, index) => (
@@ -636,6 +637,23 @@ const JobEditModal = ({
                 })}
               />
             </div>
+               <div className="grid gap-2">
+                          <label className="text-sm font-medium">
+                            Job Level
+                          </label>
+                         <Select {...register("level")}>
+                          <option value="">---Select---</option>
+                          <option value="ADVANCE">Advance</option>
+                          <option value="HARD">Hard</option>
+                          <option value="MEDIUM">Medium</option>
+                          <option value="LOW">Low</option>
+                         </Select>
+                          {errors.jd && (
+                            <p className="text-red-500 text-sm">
+                              {errors.jd.message}
+                            </p>
+                          )}
+                        </div>
           </div>
 
           <DialogFooter>

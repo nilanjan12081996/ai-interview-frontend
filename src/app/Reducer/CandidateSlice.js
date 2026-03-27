@@ -37,6 +37,7 @@ export const scheduleInterview = createAsyncThunk(
     }
 )
 
+
 export const reScheduleInterview = createAsyncThunk(
     'interview/reSchedule',
     async ({ id }, { rejectWithValue }) => {

@@ -55,7 +55,7 @@
 //               Interviewer
 //             </span>
 //           </div>
-          
+
 //           {/* Desktop Collapse Button */}
 //           <button 
 //             className="hidden md:block text-gray-400 hover:text-gray-600"
@@ -72,7 +72,7 @@
 //             <X className="h-6 w-6" />
 //           </button>
 //         </div>
-        
+
 //         <nav className="flex-1 space-y-1 p-2 overflow-y-auto overflow-x-hidden">
 //           {navItems.map((item) => (
 //             <button
@@ -92,7 +92,7 @@
 //             </button>
 //           ))}
 //         </nav>
-        
+
 //         <div className="border-t p-2">
 //           <button
 //             onClick={onLogout}
@@ -205,22 +205,22 @@ export function InsideLayout() {
 
   const navigate = useNavigate()
   const location = useLocation()
-const dispatch=useDispatch()
- const user_type=sessionStorage.getItem("role")
+  const dispatch = useDispatch()
+  const user_type = sessionStorage.getItem("role")
   const navItems = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/jobs", label: "Jobs", icon: Briefcase },
     { path: "/candidates", label: "Candidates", icon: Users },
     // { path: "/hr", label: "Recruiter Management", icon: UserCog },
-     ...(user_type === "SUPER_ADMIN"
-    ? [{ path: "/hr", label: "Recruiter Management", icon: UserCog }]
-    : []),
+    ...(user_type === "SUPER_ADMIN"
+      ? [{ path: "/hr", label: "Recruiter Management", icon: UserCog }]
+      : []),
     { path: "/settings", label: "Settings", icon: Settings },
   ]
 
   const handleLogout = () => {
     dispatch(logout())
-    navigate("/login")
+    navigate("/")
   }
 
   return (
@@ -282,11 +282,10 @@ const dispatch=useDispatch()
                   navigate(item.path)
                   setMobileMenuOpen(false)
                 }}
-                className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive
+                className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive
                     ? "bg-purple-50 text-[#800080]"
                     : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-                }`}
+                  }`}
               >
                 <item.icon className="h-5 w-5" />
                 {sidebarOpen && <span>{item.label}</span>}

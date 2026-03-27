@@ -1,4 +1,4 @@
- import { Button, Textarea, TextInput } from "flowbite-react"
+ import { Button, Select, Textarea, TextInput } from "flowbite-react"
  import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/Dialog"
 import { useForm, useFieldArray } from "react-hook-form";
 import { createJobs, getJobs } from "../../Reducer/JobSlice";
@@ -23,6 +23,7 @@ export default function AddJobDialog({
       experience: "",
       mandatorySkills: [{ skillName: "" }],
       niceToHaveSkills: [{ skillName: "" }],
+      level:""
     },
   });
 
@@ -211,6 +212,24 @@ export default function AddJobDialog({
                   required: "Job Description is required",
                 })}
               />
+              {errors.jd && (
+                <p className="text-red-500 text-sm">
+                  {errors.jd.message}
+                </p>
+              )}
+            </div>
+
+            <div className="grid gap-2">
+              <label className="text-sm font-medium">
+                Job Level
+              </label>
+             <Select {...register("level")}>
+              <option value="">---Select---</option>
+              <option value="ADVANCE">Advance</option>
+              <option value="HARD">Hard</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+             </Select>
               {errors.jd && (
                 <p className="text-red-500 text-sm">
                   {errors.jd.message}
