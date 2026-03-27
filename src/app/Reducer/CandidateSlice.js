@@ -37,6 +37,18 @@ export const scheduleInterview = createAsyncThunk(
     }
 )
 
+export const generateCodingQuestions = createAsyncThunk(
+    'generateCodingQuestions',
+    async (payload, { rejectWithValue }) => {
+        try {
+            const response = await api.post('https://api.interviewfold.com/api/coding/generate', payload);
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(err);
+        }
+    }
+)
+
 
 export const reScheduleInterview = createAsyncThunk(
     'interview/reSchedule',

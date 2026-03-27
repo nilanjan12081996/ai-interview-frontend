@@ -12,19 +12,21 @@ import InterviewModal from "./Modals/InterviewModal"
 import { IoMdEye } from "react-icons/io"
 import LinkModal from "./Modals/LinkModal"
 import { MdDesktopAccessDisabled } from "react-icons/md";
-import { reScheduleInterview } from "../Reducer/CandidateSlice"
+import { reScheduleInterview, generateCodingQuestions } from "../Reducer/CandidateSlice"
 import { toast, ToastContainer } from "react-toastify"
 import AccessDeniedModal from "./Modals/AccessDeniedModal"
 const CandidateByJob=()=>{
   //const baseUrl="http://localhost:8085";
-  const baseUrl="https://aiinterviewagent.bestworks.cloud";
+  const baseUrl="https://api.interviewfold.com";
     const{candidateByJobData}=useSelector((state)=>state?.jobs)
      const[inviteModalOpen,setInviteModalOpen]=useState(false)
       const [shareLink, setShareLink] = useState(null);
-      const [open, setOpen] = useState(false);
-      const[accessDeniedModal,setAccessDeniedModal]=useState(false)
-      const[causeData,setCauseData]=useState()
-    const location=useLocation()
+       const [open, setOpen] = useState(false);
+       const[accessDeniedModal,setAccessDeniedModal]=useState(false)
+       const[causeData,setCauseData]=useState()
+       const [isProcessing, setIsProcessing] = useState(false);
+       const [statusMessage, setStatusMessage] = useState("");
+     const location=useLocation()
     const id=location?.state?.id
     const dispatch=useDispatch()
     useEffect(()=>{
@@ -70,12 +72,25 @@ const CandidateByJob=()=>{
 //   }
 // };
     
- const handleRescheduleInterview=(id)=>{
-    dispatch(reScheduleInterview({id:id})).then((res)=>{
-      if(res?.payload?.statusCode===200){
-        toast.success(res?.payload?.message)
+  const handleRescheduleInterview = async (id) => {
+    setIsProcessing(true);
+    setStatusMessage("Resending interview link...");
+    try {
+      const res = await dispatch(reScheduleInterview({ id: id }));
+      if (res?.payload?.statusCode === 200) {
+        setStatusMessage("Regenerating coding assessment questions... This may take a moment.");
+        // Call coding generation with the token from the resend response
+        await dispatch(generateCodingQuestions({ token: res.payload.token }));
+        toast.success(res?.payload?.message || "Interview link resent and questions updated.");
+      } else {
+        toast.error(res?.payload?.message || "Failed to resend link.");
       }
-    })
+    } catch (err) {
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setIsProcessing(false);
+      setStatusMessage("");
+    }
   }
 const handleViewInNewTab = async (fileUrl) => {
   if (!fileUrl) {
@@ -119,8 +134,19 @@ setCauseData(data)
 
 return(
         <>
-        <div className="space-y-6">
+        <div className="space-y-6 relative min-h-screen">
           <ToastContainer/>
+          {isProcessing && (
+            <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-md">
+              <div className="w-16 h-16 border-8 border-[#800080] border-t-transparent rounded-full animate-spin mb-6"></div>
+              <div className="bg-white px-8 py-4 rounded-2xl shadow-2xl text-center max-w-sm">
+                <p className="text-lg font-bold text-[#800080] mb-2">Please Wait</p>
+                <p className="text-sm font-medium text-gray-600 animate-pulse">
+                  {statusMessage}
+                </p>
+              </div>
+            </div>
+          )}
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <h2 className="text-2xl font-bold tracking-tight">Candidates</h2>
                 {/* <div className="relative">

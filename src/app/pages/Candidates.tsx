@@ -57,7 +57,7 @@ export function Candidates() {
   const[accessDeniedModal,setAccessDeniedModal]=useState(false)
   const[causeData,setCauseData]=useState()
   //const baseUrl="http://localhost:8085"
-const baseUrl="https://aiinterviewagent.bestworks.cloud"
+const baseUrl="https://api.interviewfold.com"
   const dispatch=useDispatch()
   useEffect(()=>{
     dispatch(getCandidateData())
