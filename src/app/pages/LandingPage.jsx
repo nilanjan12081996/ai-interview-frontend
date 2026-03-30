@@ -7,6 +7,7 @@ import { hrLogin, hrRegister, login } from "../Reducer/AuthSlice";
 import { useNavigate } from "react-router";
 
 import talentFoldLogo from "../talentfoldLogo.png";
+import coding from "../coding_img.png"
 
 const LandingPage = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -121,7 +122,7 @@ const LandingPage = () => {
       <nav className="fixed top-0 w-full z-50 bg-surface/40 dark:bg-[#0e0e0e]/40 backdrop-blur-xl shadow-[0_40px_40px_0_rgba(168,85,247,0.1)]">
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
           <div className="flex items-center gap-3 text-2xl font-black text-on-surface tracking-tighter font-headline">
-            <img src={talentFoldLogo} alt="TalentFold Logo" className="w-26 h-26 object-contain" />
+            <img src={talentFoldLogo} alt="TalentFold Logo" className="w-[200px] h-[50px] object-contain" />
           </div>
           <div className="hidden md:flex items-center space-x-10 font-headline font-bold tracking-tight">
             <a className="text-[#D946EF] border-b-2 border-[#D946EF] pb-1 transition-colors duration-300" href="#">Platform</a>
@@ -178,9 +179,9 @@ const LandingPage = () => {
             {/* Floating UI Mockup */}
             <div className="relative max-w-6xl mx-auto">
               <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-full h-[500px] hero-glow"></div>
-              <div className="relative glass-panel rounded-xl p-2 md:p-4 shadow-2xl flex flex-col md:flex-row gap-4 aspect-[16/9] md:aspect-video overflow-hidden group">
-                {/* AI Chat Interface */}
-                <div className="w-full md:w-1/3 bg-surface-container-low rounded-lg p-6 flex flex-col border border-outline-variant/10">
+              <div className="relative glass-panel rounded-xl p-2 md:p-4 shadow-2xl flex-col md:flex-row gap-4 aspect-[16/9] md:aspect-video overflow-hidden group">
+           
+                {/* <div className="w-full md:w-1/3 bg-surface-container-low rounded-lg p-6 flex flex-col border border-outline-variant/10">
                   <div className="flex items-center gap-3 mb-8">
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                       <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>neurology</span>
@@ -202,7 +203,7 @@ const LandingPage = () => {
                     </div>
                   </div>
                 </div>
-                {/* Code Editor */}
+               
                 <div className="flex-1 bg-surface-container-lowest rounded-lg overflow-hidden border border-outline-variant/10 flex flex-col">
                   <div className="h-10 bg-surface-container-high flex items-center px-4 gap-2">
                     <div className="w-3 h-3 rounded-full bg-error/30"></div>
@@ -221,7 +222,9 @@ const LandingPage = () => {
                     <div className="flex gap-4"><span className="text-outline/40">08</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cache[item] += <span className="text-tertiary">1</span></div>
                     <div className="flex gap-4"><span className="text-outline/40">09</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-secondary">return</span> cache<span className="animate-pulse w-2 h-4 bg-primary inline-block align-middle ml-1"></span></div>
                   </div>
-                </div>
+                </div> */}
+
+                <img src={coding}/>
               </div>
             </div>
           </div>
@@ -245,7 +248,7 @@ const LandingPage = () => {
               <div className="relative z-10 h-full flex flex-col">
                 <span className="material-symbols-outlined text-primary-fixed-dim text-4xl mb-6" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
                 <h3 className="font-headline text-3xl font-bold mb-4">AI Interviewer</h3>
-                <p className="text-on-surface-variant text-lg leading-relaxed max-w-md">Real-time voice and text interaction that adapts its difficulty based on candidate performance. It doesn't just ask—it probes for depth.</p>
+                <p className="text-on-surface-variant text-sm leading-relaxed max-w-md">Real-time voice and text interaction that adapts its difficulty based on candidate performance. It doesn't just ask—it probes for depth.</p>
                 <div className="mt-auto pt-12 flex gap-4">
                   <span className="px-3 py-1 rounded-full bg-surface-container-highest text-[10px] font-bold uppercase tracking-widest border border-outline-variant/10">Voice Synthesis</span>
                   <span className="px-3 py-1 rounded-full bg-surface-container-highest text-[10px] font-bold uppercase tracking-widest border border-outline-variant/10">Emotional Intelligence</span>
