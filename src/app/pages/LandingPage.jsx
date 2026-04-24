@@ -7,7 +7,7 @@ import { hrLogin, hrRegister, login } from "../Reducer/AuthSlice";
 import { useNavigate } from "react-router";
 
 import talentFoldLogo from "../talentfoldLogo.png";
-import coding from "../coding_img.png"
+import coding from "../coding_img.jpg"
 
 const LandingPage = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -24,13 +24,13 @@ const LandingPage = () => {
     control,
     formState: { errors },
   } = useForm();
-  
+
   const {
     register: registerUser,
     handleSubmit: handleRegisterSubmit,
     formState: { errors: registerErrors },
   } = useForm();
-  
+
   const role = watch("role");
 
   const onSubmit = (data) => {
@@ -121,8 +121,14 @@ const LandingPage = () => {
       {/* TopNavBar */}
       <nav className="fixed top-0 w-full z-50 bg-surface/40 dark:bg-[#0e0e0e]/40 backdrop-blur-xl shadow-[0_40px_40px_0_rgba(168,85,247,0.1)]">
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 text-2xl font-black text-on-surface tracking-tighter font-headline">
+          {/* <div className="flex items-center gap-3 text-2xl font-black text-on-surface tracking-tighter font-headline">
             <img src={talentFoldLogo} alt="TalentFold Logo" className="w-[200px] h-[50px] object-contain" />
+          </div> */}
+          <div className="flex">
+            <div className="flex items-center font-bold text-[#D946EF] text-xl whitespace-nowrap">
+              <div>Interview</div>
+              <span>Fold</span>
+            </div>
           </div>
           <div className="hidden md:flex items-center space-x-10 font-headline font-bold tracking-tight">
             <a className="text-[#D946EF] border-b-2 border-[#D946EF] pb-1 transition-colors duration-300" href="#">Platform</a>
@@ -137,7 +143,7 @@ const LandingPage = () => {
             >
               Sign Up
             </button> */}
-            <button 
+            <button
               onClick={() => setOpenModal(true)}
               className="bg-primary text-on-primary-fixed px-6 py-2.5 rounded-full font-bold text-sm tracking-tight scale-95 active:scale-90 transition-transform hover:shadow-[0_0_20px_rgba(217,70,239,0.4)]"
             >
@@ -163,7 +169,7 @@ const LandingPage = () => {
               Experience the future of hiring with intelligent AI interviews and coding assessments. No more scheduling nightmares, just unbiased, deep technical evaluation.
             </p>
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-24">
-              <Button 
+              <Button
                 onClick={() => setOpenModal(true)}
                 className="btn-primary-gradient text-on-primary-fixed border-none px-10 py-4 rounded-full font-bold text-lg shadow-[0_10px_40px_-10px_rgba(168,85,247,0.5)] hover:scale-105 transition-transform"
               >
@@ -180,7 +186,7 @@ const LandingPage = () => {
             <div className="relative max-w-6xl mx-auto">
               <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-full h-[500px] hero-glow"></div>
               <div className="relative glass-panel rounded-xl p-2 md:p-4 shadow-2xl flex-col md:flex-row gap-4 aspect-[16/9] md:aspect-video overflow-hidden group">
-           
+
                 {/* <div className="w-full md:w-1/3 bg-surface-container-low rounded-lg p-6 flex flex-col border border-outline-variant/10">
                   <div className="flex items-center gap-3 mb-8">
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
@@ -224,7 +230,7 @@ const LandingPage = () => {
                   </div>
                 </div> */}
 
-                <img src={coding}/>
+                <img src={coding} />
               </div>
             </div>
           </div>
@@ -300,7 +306,7 @@ const LandingPage = () => {
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-24">
               <h2 className="font-headline text-4xl md:text-6xl font-bold tracking-tighter mb-4">The Talent Pipeline, Reimagined</h2>
-              <p className="text-on-surface-variant max-w-2xl mx-auto">From sourcing to offer, TalentFold automates the friction-heavy assessment phase.</p>
+              <p className="text-on-surface-variant max-w-2xl mx-auto">From sourcing to offer, InterviewFold automates the friction-heavy assessment phase.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-16 relative">
               {/* Connector line (desktop) */}
@@ -311,7 +317,7 @@ const LandingPage = () => {
                   <span className="material-symbols-outlined text-primary text-4xl">link</span>
                 </div>
                 <h4 className="font-headline text-2xl font-bold mb-4 text-on-surface">1. Send Invites</h4>
-                <p className="text-on-surface-variant text-sm leading-relaxed px-4">From sourcing to offer, TalentFold automates the friction-heavy assessment phase.</p>
+                <p className="text-on-surface-variant text-sm leading-relaxed px-4">From sourcing to offer, InterviewFold automates the friction-heavy assessment phase.</p>
               </div>
               {/* Step 2 */}
               <div className="relative z-10 flex flex-col items-center text-center">
@@ -319,7 +325,7 @@ const LandingPage = () => {
                   <span className="material-symbols-outlined text-secondary text-4xl">video_chat</span>
                 </div>
                 <h4 className="font-headline text-2xl font-bold mb-4 text-on-surface">2. AI Interrogation</h4>
-                <p className="text-on-surface-variant text-sm leading-relaxed px-4">Candidates engage with TalentFold in a structured but flexible 45-minute technical deep dive.</p>
+                <p className="text-on-surface-variant text-sm leading-relaxed px-4">Candidates engage with InterviewFold in a structured but flexible 45-minute technical deep dive.</p>
               </div>
               {/* Step 3 */}
               <div className="relative z-10 flex flex-col items-center text-center">
@@ -327,7 +333,7 @@ const LandingPage = () => {
                   <span className="material-symbols-outlined text-tertiary text-4xl">verified</span>
                 </div>
                 <h4 className="font-headline text-2xl font-bold mb-4 text-on-surface">3. Review &amp; Hire</h4>
-                <p className="text-on-surface-variant text-sm leading-relaxed px-4">From sourcing to offer, TalentFold automates the friction-heavy assessment phase.</p>
+                <p className="text-on-surface-variant text-sm leading-relaxed px-4">From sourcing to offer, InterviewFold automates the friction-heavy assessment phase.</p>
               </div>
             </div>
           </div>
@@ -343,7 +349,7 @@ const LandingPage = () => {
             <h2 className="font-headline text-4xl md:text-7xl font-bold tracking-tighter mb-8 text-on-surface">Ready to Transform Your Hiring?</h2>
             <p className="font-body text-xl text-on-surface-variant mb-12 max-w-2xl mx-auto">Join 500+ engineering teams cutting time-to-hire by 65% while increasing technical bar.</p>
             <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
-              <Button 
+              <Button
                 onClick={() => setOpenModal(true)}
                 className="w-full md:w-auto btn-primary-gradient text-on-primary-fixed px-10 py-7 rounded-full font-bold text-xl shadow-[0_0_50px_rgba(168,85,247,0.3)] hover:scale-105 transition-transform active:scale-95 cursor-pointer"
               >
@@ -366,8 +372,11 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="bg-[#000000] w-full py-12 px-8 border-t border-[#494847]/15 relative z-20">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 max-w-7xl mx-auto">
-          <div className="flex items-center gap-2 text-xl font-bold text-on-surface-variant font-headline">
-            <img src={talentFoldLogo} alt="TalentFold Logo" className="h-8 w-auto object-contain" />
+          <div className="flex">
+            <div className="flex items-center font-bold text-[#D946EF] text-xl whitespace-nowrap">
+              <div>Interview</div>
+              <span>Fold</span>
+            </div>
           </div>
           <div className="flex flex-wrap justify-center gap-8 font-body text-sm uppercase tracking-widest">
             <a className="text-on-surface-variant hover:text-white transition-opacity" href="#">Privacy</a>
@@ -375,7 +384,7 @@ const LandingPage = () => {
             <a className="text-on-surface-variant hover:text-white transition-opacity" href="#">Security</a>
             <a className="text-on-surface-variant hover:text-white transition-opacity" href="#">Contact</a>
           </div>
-          <div className="text-[#D946EF] font-body text-sm uppercase tracking-widest text-center md:text-right">© 2024 TalentFold. The Future of Hiring.</div>
+          <div className="text-[#D946EF] font-body text-sm uppercase tracking-widest text-center md:text-right">© 2026 InterviewFold. The Future of Hiring.</div>
         </div>
       </footer>
 
@@ -385,15 +394,15 @@ const LandingPage = () => {
           <div className="relative p-8">
             <DialogHeader className="mb-8">
               <DialogTitle className="text-3xl font-headline font-bold text-center text-white tracking-tight">
-                Sign in to <span className="text-primary">TalentFold</span>
+                Sign in to <span className="text-primary">InterviewFold</span>
               </DialogTitle>
             </DialogHeader>
-            
+
             <form onSubmit={handleSubmit(onSubmit)} className="dark flex flex-col gap-6">
               <div>
                 <Label htmlFor="role" value="Role" className="mb-2 block font-medium text-on-surface-variant text-xs uppercase tracking-widest pl-1" />
-                <Select 
-                  id="role" 
+                <Select
+                  id="role"
                   {...register("role", { required: "Role is required" })}
                   className="bg-surface-container-high/50"
                   required
@@ -421,7 +430,7 @@ const LandingPage = () => {
               <div>
                 <div className="flex justify-between items-center mb-2 pl-1">
                   <Label htmlFor="password" value="Password" className="font-medium text-on-surface-variant text-xs uppercase tracking-widest" />
-                  <a href="#" className="text-[10px] text-primary hover:text-white transition-colors duration-300 font-bold uppercase tracking-widest">forgot?</a>
+                  <a href="#" className="text-[10px] text-primary hover:text-white transition-colors duration-300 font-bold uppercase tracking-widest">forgot Password?</a>
                 </div>
                 <TextInput
                   id="password"
@@ -441,8 +450,8 @@ const LandingPage = () => {
               )}
 
               <div className="mt-4">
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full btn-primary-gradient border-none h-14 rounded-xl text-on-primary-fixed font-bold text-lg hover:shadow-[0_0_30px_rgba(217,70,239,0.3)] transition-all duration-300 active:scale-95"
                 >
                   Sign In to Platform
@@ -464,7 +473,7 @@ const LandingPage = () => {
                 Create your <span className="text-primary">Enterprise</span> Profile
               </DialogTitle>
             </DialogHeader>
-            
+
             <form onSubmit={handleRegisterSubmit(onRegister)} className="dark grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-1">
                 <Label htmlFor="firstName" value="First Name" className="mb-2 block font-medium text-on-surface-variant text-xs uppercase tracking-widest pl-1" />
@@ -533,8 +542,8 @@ const LandingPage = () => {
                     {regMsg}
                   </div>
                 )}
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full btn-primary-gradient border-none h-14 rounded-xl text-on-primary-fixed font-bold text-lg hover:shadow-[0_0_30px_rgba(217,70,239,0.3)] transition-all duration-300 active:scale-95"
                 >
                   Create Recruiter Account

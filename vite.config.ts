@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [
     react(),
     // Workaround
-
+    
     {
       name: 'load+transform-js-files-as-jsx',
       async transform(code, id) {
@@ -45,4 +45,5 @@ export default defineConfig({
   // End workaround
 
 });
+
 

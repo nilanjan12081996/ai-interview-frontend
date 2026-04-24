@@ -243,14 +243,17 @@ export function InsideLayout() {
         `}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b px-4">
-          <div className="flex items-center gap-2 font-bold text-[#800080]">
-            <div className="flex h-8 w-20 items-center justify-center rounded bg-[#800080] text-white">
-              Interview
-            </div>
-            {sidebarOpen && <span className="text-xl">Fold</span>}
-          </div>
+        <div className={`flex h-16 items-center border-b px-4 ${sidebarOpen ? "justify-between" : "justify-center"}`}>
 
+          {/* Logo Text - Only visible when sidebar is open */}
+          {sidebarOpen && (
+            <div className="flex items-center font-bold text-[#800080] text-xl whitespace-nowrap">
+              <div>Interview</div>
+              <span>Fold</span>
+            </div>
+          )}
+
+          {/* Desktop Toggle Button */}
           <button
             className="hidden md:block text-gray-400 hover:text-gray-600"
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -262,8 +265,9 @@ export function InsideLayout() {
             )}
           </button>
 
+          {/* Mobile Close Button */}
           <button
-            className="md:hidden text-gray-500"
+            className="md:hidden text-gray-500 absolute right-4"
             onClick={() => setMobileMenuOpen(false)}
           >
             <X className="h-6 w-6" />
@@ -283,8 +287,8 @@ export function InsideLayout() {
                   setMobileMenuOpen(false)
                 }}
                 className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive
-                    ? "bg-purple-50 text-[#800080]"
-                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                  ? "bg-purple-50 text-[#800080]"
+                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
                   }`}
               >
                 <item.icon className="h-5 w-5" />
@@ -324,10 +328,10 @@ export function InsideLayout() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="relative hidden md:block">
+            {/* <div className="relative hidden md:block">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input placeholder="Search..." className="w-64 pl-9" />
-            </div>
+            </div> */}
 
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
