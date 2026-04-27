@@ -198,10 +198,14 @@ import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { useDispatch } from "react-redux"
 import { logout } from "../Reducer/AuthSlice"
+import LogoutModal from "../pages/Modals/LogoutModal"
+
 
 export function InsideLayout() {
   const [sidebarOpen, setSidebarOpen] = React.useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false)
+
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -219,9 +223,14 @@ export function InsideLayout() {
   ]
 
   const handleLogout = () => {
+    setIsLogoutModalOpen(true)
+  }
+
+  const confirmLogout = () => {
     dispatch(logout())
     navigate("/")
   }
+
 
   return (
     <div className="flex h-screen bg-gray-50 text-gray-900">
@@ -348,7 +357,14 @@ export function InsideLayout() {
           <Outlet />
         </div>
       </main>
+      {/* Logout Modal */}
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={confirmLogout}
+      />
     </div>
+
   )
 }
 

@@ -8,7 +8,7 @@ import CandidateEditModal from "./Modals/CandidateEditModal"
 import { IoMdEye } from "react-icons/io"
 import LinkModal from "./Modals/LinkModal"
 import { MdDesktopAccessDisabled } from "react-icons/md"
-import { reScheduleInterview, deleteCandidate } from "../Reducer/CandidateSlice"
+import { reScheduleInterview, deleteCandidate, updateCandidate } from "../Reducer/CandidateSlice"
 import { toast, ToastContainer } from "react-toastify"
 import AccessDeniedModal from "./Modals/AccessDeniedModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../components/ui/Dialog"
@@ -17,27 +17,68 @@ import { Button } from "flowbite-react"
 const PAGE_SIZE = 10
 
 // ─── Resend Modal ─────────────────────────────────────────────────────────────
-function ResendModal({ open, setOpen, candidate }) {
+function ResendModal({ open, setOpen, candidate, jobId }) {
   const dispatch = useDispatch()
-  const [isCoding, setIsCoding] = useState(false)
+  const [isCoding, setIsCoding] = useState(candidate?.isCoding === 1)
   const [isInterview, setIsInterview] = useState(true)
   const [loading, setLoading] = useState(false)
+  
+  // Date and Time state
+  const [interviewDate, setInterviewDate] = useState(candidate?.interviewDate || "")
+  const [startTime, setStartTime] = useState(candidate?.startTime || "")
+  const [endTime, setEndTime] = useState(candidate?.endTime || "")
+
+  useEffect(() => {
+    if (candidate && open) {
+      setIsCoding(candidate.isCoding === 1)
+      setInterviewDate(candidate.interviewDate || "")
+      setStartTime(candidate.startTime || "")
+      setEndTime(candidate.endTime || "")
+    }
+  }, [candidate, open])
 
   const handleResend = async () => {
     setLoading(true)
-    const res = await dispatch(
-      reScheduleInterview({
-        id: candidate.id,
-        coding: isCoding ? 1 : 0,
-        interviewData: isInterview ? 1 : 0,
-      })
-    )
-    setLoading(false)
-    if (res?.payload?.statusCode === 200) {
-      toast.success(res?.payload?.message || "Link resent successfully!")
-      setOpen(false)
-    } else {
-      toast.error(res?.payload?.message || "Failed to resend link.")
+    try {
+      // 1. Update candidate schedule first
+      const updatePayload = {
+        candidateName: candidate.candidateName,
+        email: candidate.candidateEmail,
+        phoneNumber: candidate.candidatePhone,
+        jobId: jobId || candidate.jobId || candidate.job_id,
+        startTime,
+        endTime,
+        interviewDate,
+        resumeLink: candidate.resumeLink,
+        isCoding: isCoding ? true : false,
+      }
+
+      const updateRes = await dispatch(updateCandidate({ id: candidate.id, userInput: updatePayload }))
+
+      if (updateRes?.payload?.statusCode === 200 || updateRes?.payload?.status) {
+        // 2. Then call resend link API
+        const res = await dispatch(
+          reScheduleInterview({
+            id: candidate.id,
+            coding: isCoding ? 1 : 0,
+            interviewData: isInterview ? 1 : 0,
+          })
+        )
+
+        if (res?.payload?.statusCode === 200 || res?.payload?.status) {
+          toast.success(res?.payload?.message || "Link resent successfully!")
+          dispatch(getCandidateByJob({ id: jobId })) // Refresh list
+          setOpen(false)
+        } else {
+          toast.error(res?.payload?.message || "Failed to resend link.")
+        }
+      } else {
+        toast.error(updateRes?.payload?.message || "Failed to update schedule.")
+      }
+    } catch (err) {
+      toast.error("An unexpected error occurred.")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -78,21 +119,61 @@ function ResendModal({ open, setOpen, candidate }) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3 py-4">
-          <OptionCard
-            label="Coding assessment"
-            description="Enable coding round for this candidate"
-            icon={Code}
-            checked={isCoding}
-            onChange={setIsCoding}
-          />
-          <OptionCard
-            label="AI interview"
-            description="Behavioral & technical questions"
-            icon={MessageSquare}
-            checked={isInterview}
-            onChange={setIsInterview}
-          />
+        <div className="flex flex-col gap-4 py-4">
+          {/* Options */}
+          <div className="flex flex-col gap-3">
+            <OptionCard
+              label="Coding assessment"
+              description="Enable coding round for this candidate"
+              icon={Code}
+              checked={isCoding}
+              onChange={setIsCoding}
+            />
+            <OptionCard
+              label="AI interview"
+              description="Behavioral & technical questions"
+              icon={MessageSquare}
+              checked={isInterview}
+              onChange={setIsInterview}
+            />
+          </div>
+
+          {/* Date & Time Inputs */}
+          <div className="grid gap-3 pt-2 border-t border-gray-100">
+            <div className="grid gap-1.5">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Interview Date</label>
+              <input
+                type="date"
+                value={interviewDate}
+                onChange={(e) => setInterviewDate(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#cc66cc] focus:border-[#800080] outline-none transition"
+                onClick={(e) => e.target.showPicker && e.target.showPicker()}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-1.5">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Start Time</label>
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#cc66cc] focus:border-[#800080] outline-none transition"
+                  onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">End Time</label>
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#cc66cc] focus:border-[#800080] outline-none transition"
+                  onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         {!isCoding && !isInterview && (
@@ -581,6 +662,7 @@ const CandidateByJob = () => {
           open={resendModalOpen}
           setOpen={setResendModalOpen}
           candidate={resendCandidate}
+          jobId={id}
         />
       )}
     </div>

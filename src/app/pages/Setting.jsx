@@ -6,10 +6,16 @@ import { useDispatch } from "react-redux";
 import { hrLogin, login, resetPassword } from "../Reducer/AuthSlice";
 import { useNavigate } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
+import { Eye, EyeOff } from "lucide-react";
+
 const Setting=()=>{
     const dispatch=useDispatch()
     const navigate=useNavigate()
     const[errMsg,setErrorMsg]=useState()
+    const [showOldPassword, setShowOldPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
         const {
         register,
         watch,
@@ -59,15 +65,24 @@ const Setting=()=>{
                      
                      <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
-                       <label htmlFor="email" value="Your email" className="font-medium text-[15px]">Old Password</label>
+                       <label htmlFor="oldPassword" value="Your email" className="font-medium text-[15px]">Old Password</label>
                        </div>
-                       <TextInput
-                         id="email"
-                         type="password"
-                         placeholder="old password"
-                         {...register("oldPassword",{required:"Old password required"})}
-                        
-                       />
+                        <div className="relative">
+                          <TextInput
+                            id="oldPassword"
+                            type={showOldPassword ? "text" : "password"}
+                            placeholder="old password"
+                            {...register("oldPassword", { required: "Old password required" })}
+                            className="pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowOldPassword(!showOldPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#800080] transition-colors"
+                          >
+                            {showOldPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
                        {
                         errors?.oldPassword&&(
                            <span className="text-red-500 text-left">{errors?.oldPassword?.message}</span>
@@ -79,16 +94,25 @@ const Setting=()=>{
                      <div className="flex flex-col gap-2">
                        <div className="flex items-center justify-between">
                          {/* <Label htmlFor="password" value="Your password" className="font-semibold" /> */}
-                          <label htmlFor="email" value="Your email" className="font-medium text-[15px]">New Password</label>
+                          <label htmlFor="newPassword" value="Your email" className="font-medium text-[15px]">New Password</label>
                         
                        </div>
-                       <TextInput
-                         id="password"
-                         type="password"
-                         placeholder="New Password"
-                          {...register("newPassword",{required:"New Password required"})}
-                         
-                       />
+                        <div className="relative">
+                          <TextInput
+                            id="newPassword"
+                            type={showNewPassword ? "text" : "password"}
+                            placeholder="New Password"
+                            {...register("newPassword", { required: "New Password required" })}
+                            className="pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#800080] transition-colors"
+                          >
+                            {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
                        {errors?.newPassword&&(
                          <span className="text-red-500 text-left">{errors?.newPassword?.message}</span>
                        )}
@@ -96,17 +120,28 @@ const Setting=()=>{
 
                        <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
-                       <label htmlFor="email" value="Your email" className="font-medium text-[15px]">Confirm Password</label>
+                       <label htmlFor="confirmPassword" value="Your email" className="font-medium text-[15px]">Confirm Password</label>
                        </div>
-                       <TextInput
-                        type="password"
-                        placeholder="confirm password"
-                        {...register("confirmPassword", {
-                            required: "Confirm Password required",
-                            validate: (value) =>
-                            value === newPassword || "Passwords do not match",
-                        })}
-                        />
+                        <div className="relative">
+                          <TextInput
+                            id="confirmPassword"
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="confirm password"
+                            {...register("confirmPassword", {
+                              required: "Confirm Password required",
+                              validate: (value) =>
+                                value === newPassword || "Passwords do not match",
+                            })}
+                            className="pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#800080] transition-colors"
+                          >
+                            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
                        {
                         errors?.confirmPassword&&(
                            <span className="text-red-500 text-left">{errors?.confirmPassword?.message}</span>

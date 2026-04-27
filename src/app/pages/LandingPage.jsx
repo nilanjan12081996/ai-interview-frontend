@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { hrLogin, hrRegister, login } from "../Reducer/AuthSlice";
 import { useNavigate } from "react-router";
+import { Eye, EyeOff } from "lucide-react";
+
 
 import talentFoldLogo from "../talentfoldLogo.png";
 import coding from "../coding_img.jpg"
@@ -14,6 +16,8 @@ const LandingPage = () => {
   const [openRegisterModal, setOpenRegisterModal] = useState(false);
   const [errMsg, setErrorMsg] = useState("");
   const [regMsg, setRegMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -432,15 +436,29 @@ const LandingPage = () => {
                   <Label htmlFor="password" value="Password" className="font-medium text-on-surface-variant text-xs uppercase tracking-widest" />
                   <a href="#" className="text-[10px] text-primary hover:text-white transition-colors duration-300 font-bold uppercase tracking-widest">forgot Password?</a>
                 </div>
-                <TextInput
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  {...register("password", { required: "Password is required" })}
-                  className="bg-white/5"
-                  required
-                />
+                <div className="relative">
+                  <TextInput
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    {...register("password", { required: "Password is required" })}
+                    className="bg-white/5 pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-white transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff size={18} className="text-primary" />
+                    ) : (
+                      <Eye size={18} className="text-on-surface-variant" />
+                    )}
+                  </button>
+                </div>
                 {errors?.password && <span className="text-error text-[10px] mt-1 block pl-1">{errors?.password?.message}</span>}
+
               </div>
 
               {errMsg && (

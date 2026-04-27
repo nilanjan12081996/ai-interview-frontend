@@ -5,11 +5,15 @@ import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { hrLogin, login } from "../Reducer/AuthSlice";
 import { useNavigate } from "react-router";
+import { Eye, EyeOff } from "lucide-react";
+
 
 const Login = () => {
 const dispatch=useDispatch()
 const navigate=useNavigate()
 const[errMsg,setErrorMsg]=useState()
+const [showPassword, setShowPassword] = useState(false);
+
     const {
     register,
     watch,
@@ -105,13 +109,23 @@ dispatch(login(data)).then((res)=>{
                 Forgot password?
               </a>
             </div>
-            <TextInput
-              id="password"
-              type="password"
-              placeholder="password"
-               {...register("password",{required:"Password required"})}
-              
-            />
+            <div className="relative">
+              <TextInput
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="password"
+                {...register("password", { required: "Password required" })}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#800080] transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
             {errors?.password&&(
               <span className="text-red-500">{errors?.password?.message}</span>
             )}

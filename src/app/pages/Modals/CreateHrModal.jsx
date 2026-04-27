@@ -1,17 +1,21 @@
 
-
+import React, { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/Table"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/Dialog"
-import { Plus } from "lucide-react"
+import { Plus, Eye, EyeOff } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { useDispatch } from "react-redux"
 import { createHrUser, getHrUser } from "../../Reducer/HrSlice"
 import { Button, TextInput } from "flowbite-react"
-  import { toast } from 'react-toastify';
+import { toast } from 'react-toastify';
+
 const CreateHrModal=({isModalOpen,
               setIsModalOpen})=>{
 const dispatch=useDispatch()
+const [showPassword, setShowPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
       const {
         register,
         watch,
@@ -117,12 +121,22 @@ const dispatch=useDispatch()
                 {/* Password */}
                 <div className="grid gap-2">
                     <label className="text-sm font-medium">Password</label>
-                    <TextInput
-                    type="password"
-                    {...register("password", {
-                        required: "Password is required",
-                    })}
-                    />
+                    <div className="relative">
+                      <TextInput
+                      type={showPassword ? "text" : "password"}
+                      {...register("password", {
+                          required: "Password is required",
+                      })}
+                      className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#800080] transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                     {errors.password && (
                     <p className="text-red-500 text-sm">
                         {errors.password.message}
@@ -133,15 +147,25 @@ const dispatch=useDispatch()
                 {/* Confirm Password */}
                 <div className="grid gap-2">
                     <label className="text-sm font-medium">Confirm Password</label>
-                    <TextInput
-                    type="password"
-                    {...register("confirmPassword", {
-                        required: "Confirm password is required",
-                        validate: (value) =>
-                        value === watch("password") ||
-                        "Passwords do not match",
-                    })}
-                    />
+                    <div className="relative">
+                      <TextInput
+                      type={showConfirmPassword ? "text" : "password"}
+                      {...register("confirmPassword", {
+                          required: "Confirm password is required",
+                          validate: (value) =>
+                          value === watch("password") ||
+                          "Passwords do not match",
+                      })}
+                      className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#800080] transition-colors"
+                      >
+                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                     {errors.confirmPassword && (
                     <p className="text-red-500 text-sm">
                         {errors.confirmPassword.message}

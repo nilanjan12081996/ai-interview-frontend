@@ -92,6 +92,8 @@ export function Jobs() {
   const [showJd, setShowJd]                 = useState("")
   const [search, setSearch]                 = useState("")
   const [page, setPage]                     = useState(1)
+  const [modalTitle, setModalTitle]         = useState("Details")
+
 
   const { allJobs } = useSelector((state) => state?.jobs)
   const dispatch = useDispatch()
@@ -119,10 +121,12 @@ export function Jobs() {
     setOpenDeleteModal(true)
   }
 
-  const handleJdShow = (jd) => {
+  const handleJdShow = (content, title = "Details") => {
     setShowJdModal(true)
-    setShowJd(jd)
+    setShowJd(content)
+    setModalTitle(title)
   }
+
 
   // newest first, then search filter
   const allData = [...(allJobs?.data ?? [])].reverse()
@@ -214,33 +218,60 @@ export function Jobs() {
                   {/* Job Description */}
                   <td className="px-4 py-3 text-center" style={{ minWidth: "220px", maxWidth: "280px" }}>
                     <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
-                      {jobData.jd.slice(0, 100)}...
+                      {jobData.jd.length > 100 ? `${jobData.jd.slice(0, 100)}...` : jobData.jd}
                     </p>
-                    <button
-                      onClick={() => handleJdShow(jobData.jd)}
-                      className="mt-1 text-xs text-[#800080] hover:text-[#6a006a] font-medium transition-colors"
-                    >
-                      Read more
-                    </button>
+                    {jobData.jd.length > 100 && (
+                      <button
+                        onClick={() => handleJdShow(jobData.jd, "Job Description")}
+                        className="mt-1 text-xs text-[#800080] hover:text-[#6a006a] font-medium transition-colors"
+                      >
+                        Read more
+                      </button>
+                    )}
                   </td>
+
 
                   {/* Nice to Have Skills */}
-                  <td className="px-4 py-3 text-center" style={{ minWidth: "160px" }}>
-                    <div className="flex flex-wrap justify-center gap-0">
-                      {jobData?.mustHaveSkills?.map((skill, i) => (
+                  <td className="px-4 py-3 text-center" style={{ minWidth: "160px", maxWidth: "200px" }}>
+                    <div className="flex flex-wrap justify-center gap-0 max-h-[44px] overflow-hidden">
+                      {jobData?.mustHaveSkills?.filter(s => s.skillName.trim() !== "").map((skill, i) => (
                         <SkillPill key={i} name={skill.skillName} color="blue" />
                       ))}
+                      {jobData?.mustHaveSkills?.filter(s => s.skillName.trim() !== "").length === 0 && "-"}
                     </div>
+                    {jobData?.mustHaveSkills?.filter(s => s.skillName.trim() !== "").length > 1 && (
+                      <button
+                        onClick={() => handleJdShow(jobData.mustHaveSkills.filter(s => s.skillName.trim() !== "").map(s => s.skillName).join(", "), "Nice to Have Skills")}
+                        className="mt-1 text-xs text-[#800080] hover:text-[#6a006a] font-medium transition-colors"
+                      >
+                        Read more
+                      </button>
+                    )}
                   </td>
 
+
+
+
                   {/* Mandatory Skills */}
-                  <td className="px-4 py-3 text-center" style={{ minWidth: "160px" }}>
-                    <div className="flex flex-wrap justify-center gap-0">
-                      {jobData?.mandatorySkills?.map((skill, i) => (
+                  <td className="px-4 py-3 text-center" style={{ minWidth: "160px", maxWidth: "200px" }}>
+                    <div className="flex flex-wrap justify-center gap-0 max-h-[44px] overflow-hidden">
+                      {jobData?.mandatorySkills?.filter(s => s.skillName.trim() !== "").map((skill, i) => (
                         <SkillPill key={i} name={skill.skillName} color="purple" />
                       ))}
+                      {jobData?.mandatorySkills?.filter(s => s.skillName.trim() !== "").length === 0 && "-"}
                     </div>
+                    {jobData?.mandatorySkills?.filter(s => s.skillName.trim() !== "").length > 2 && (
+                      <button
+                        onClick={() => handleJdShow(jobData.mandatorySkills.filter(s => s.skillName.trim() !== "").map(s => s.skillName).join(", "), "Mandatory Skills")}
+                        className="mt-1 text-xs text-[#800080] hover:text-[#6a006a] font-medium transition-colors"
+                      >
+                        Read more
+                      </button>
+                    )}
                   </td>
+
+
+
 
                   {/* Experience */}
                   <td className="px-4 py-3 text-center whitespace-nowrap">
@@ -336,8 +367,9 @@ export function Jobs() {
         <JobDeleteModal openDeleteModal={openDeleteModal} setOpenDeleteModal={setOpenDeleteModal} jobid={jobid} />
       )}
       {showJdModal && (
-        <JdModalView showJdModal={showJdModal} setShowJdModal={setShowJdModal} showJd={showJd} />
+        <JdModalView showJdModal={showJdModal} setShowJdModal={setShowJdModal} showJd={showJd} title={modalTitle} />
       )}
+
     </div>
   )
 }

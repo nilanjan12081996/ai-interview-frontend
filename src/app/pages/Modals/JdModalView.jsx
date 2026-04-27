@@ -5,7 +5,8 @@ const JdModalView=(
     {
         showJdModal,
         setShowJdModal,
-        showJd
+        showJd,
+        title = "Details"
     }
 )=>{
     return(
@@ -15,7 +16,8 @@ const JdModalView=(
             <DialogContent  className="sm:max-w-[800px] bg-white max-h-[90vh] overflow-y-auto">
           
             <DialogHeader>
-                <DialogTitle >Job Description Details</DialogTitle>
+                <DialogTitle >{title}</DialogTitle>
+
                 {/* <DialogDescription>
                 Create a new Job for Candidates.
                 </DialogDescription> */}
