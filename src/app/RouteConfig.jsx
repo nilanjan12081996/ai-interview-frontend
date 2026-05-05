@@ -1,4 +1,5 @@
-import { Navigate } from "react-router"
+import { Navigate } from "react-router-dom"
+import ErrorPage from "./pages/ErrorPage"
 import OutsideLayout from "../ui/OutsideLayout"
 import Login from "./pages/Login"
 import LandingPage from "./pages/LandingPage"
@@ -12,6 +13,7 @@ import InterviewRoom from "./pages/interview/InterviewRoom"
 import CandidateByJob from "./pages/CandidateByJob"
 import Setting from "./pages/Setting"
 import Coding from "./pages/Coding"
+import GptCost from "./pages/GptCost"
 
 const RoutesConfig = [
   // =========================
@@ -20,6 +22,7 @@ const RoutesConfig = [
   {
     path: "/",
     element: <LandingPage />,
+    errorElement: <ErrorPage />,
   },
   // =========================
   // OUTSIDE LAYOUT (Auth Pages)
@@ -27,6 +30,7 @@ const RoutesConfig = [
   {
     path: "/",
     element: <OutsideLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "login",
@@ -37,6 +41,7 @@ const RoutesConfig = [
   {
     path: "/",
     element: <OutsideLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "interview/:token",
@@ -54,6 +59,7 @@ const RoutesConfig = [
         <InsideLayout />
       </ProtectedRoute>
     ),
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "dashboard",
@@ -82,6 +88,10 @@ const RoutesConfig = [
       {
         path: "settings",
         element: <Setting />,
+      },
+      {
+        path: "gpt-cost",
+        element: <GptCost />,
       },
     ],
   },

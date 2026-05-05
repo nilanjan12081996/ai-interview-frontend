@@ -4,7 +4,7 @@ import { Button, Card, Label, Select, TextInput } from "flowbite-react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { hrLogin, login } from "../Reducer/AuthSlice";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
 

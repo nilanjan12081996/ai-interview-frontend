@@ -2,7 +2,7 @@ import { Search, Link as LinkIcon, Video, FileText, MessageSquare, Code, Downloa
 import { useDispatch, useSelector } from "react-redux"
 import { useEffect, useState, useRef } from "react"
 import { getCandidateByJob } from "../Reducer/JobSlice"
-import { useLocation } from "react-router"
+import { useLocation } from "react-router-dom"
 import InterviewModal from "./Modals/InterviewModal"
 import CandidateEditModal from "./Modals/CandidateEditModal"
 import { IoMdEye } from "react-icons/io"
@@ -414,7 +414,7 @@ const CandidateByJob = () => {
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const HEADERS = [
-    "Candidate", "Email", "Phone", "Resume",
+    "Candidate", "Email", "Phone", "Added By", "Recruiter Email", "Resume",
     "Client Name", "Interview Date", "Timing",
     "Interview Status", "Resources", "Report",
     "Resend Link", "Actions",
@@ -486,6 +486,16 @@ const CandidateByJob = () => {
                   {/* Phone */}
                   <td className="px-4 py-3 text-center text-gray-500 text-xs whitespace-nowrap">
                     {candidate.candidatePhone}
+                  </td>
+
+                  {/* Recruiter Name */}
+                  <td className="px-4 py-3 text-center whitespace-nowrap text-xs font-semibold text-[#800080] capitalize">
+                    {candidate.users?.firstName} {candidate.users?.lastName}
+                  </td>
+
+                  {/* Recruiter Email */}
+                  <td className="px-4 py-3 text-center whitespace-nowrap text-xs text-gray-500 lowercase">
+                    {candidate.users?.email}
                   </td>
 
                   {/* Resume */}

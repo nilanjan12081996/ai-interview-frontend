@@ -191,6 +191,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  DollarSign,
 } from "lucide-react"
 
 import { Outlet, useNavigate, useLocation } from "react-router-dom"
@@ -199,6 +200,7 @@ import { Input } from "../components/ui/Input"
 import { useDispatch } from "react-redux"
 import { logout } from "../Reducer/AuthSlice"
 import LogoutModal from "../pages/Modals/LogoutModal"
+import GptCostSummary from "../components/GptCostSummary"
 
 
 export function InsideLayout() {
@@ -219,6 +221,7 @@ export function InsideLayout() {
     ...(user_type === "SUPER_ADMIN"
       ? [{ path: "/hr", label: "Recruiter Management", icon: UserCog }]
       : []),
+    { path: "/gpt-cost", label: "GPT Cost", icon: DollarSign },
     { path: "/settings", label: "Settings", icon: Settings },
   ]
 
@@ -306,6 +309,7 @@ export function InsideLayout() {
             )
           })}
         </nav>
+
 
         {/* Logout */}
         <div className="border-t p-2">

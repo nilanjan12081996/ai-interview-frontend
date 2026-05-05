@@ -411,7 +411,7 @@ export function Candidates() {
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const HEADERS = [
-    "Candidate", "Email", "Phone", "Resume",
+    "Candidate", "Email", "Phone", "Added By", "Recruiter Email", "Resume",
     "Client Name", "Interview Date", "Timing",
     "Interview Status", "Resources", "Report",
     "Resend Link", "Actions",
@@ -466,6 +466,14 @@ export function Candidates() {
                     <td className="px-4 py-3 text-center text-gray-500 text-xs whitespace-nowrap">{candidate.candidateEmail}</td>
 
                     <td className="px-4 py-3 text-center text-gray-500 text-xs whitespace-nowrap">{candidate.candidatePhone}</td>
+
+                    <td className="px-4 py-3 text-center whitespace-nowrap text-xs font-semibold text-[#800080] capitalize">
+                      {candidate.users?.firstName} {candidate.users?.lastName}
+                    </td>
+
+                    <td className="px-4 py-3 text-center whitespace-nowrap text-xs text-gray-500 lowercase">
+                      {candidate.users?.email}
+                    </td>
 
                     {/* Resume */}
                     <td className="px-4 py-3">

@@ -10,7 +10,7 @@ import InterviewModal from "./Modals/InterviewModal"
 import { ToastContainer } from "react-toastify"
 import JobEditModal from "./Modals/JobEditModal"
 import JobDeleteModal from "./Modals/JobDeleteModal"
-import { useNavigate } from "react-router"
+import { useNavigate } from "react-router-dom"
 import JdModalView from "./Modals/JdModalView"
 
 const PAGE_SIZE = 10
@@ -232,14 +232,14 @@ export function Jobs() {
 
 
                   {/* Nice to Have Skills */}
-                  <td className="px-4 py-3 text-center" style={{ minWidth: "160px", maxWidth: "200px" }}>
-                    <div className="flex flex-wrap justify-center gap-0 max-h-[44px] overflow-hidden">
-                      {jobData?.mustHaveSkills?.filter(s => s.skillName.trim() !== "").map((skill, i) => (
+                  <td className="px-4 py-3 text-center" style={{ minWidth: "220px", maxWidth: "280px" }}>
+                    <div className="flex flex-wrap justify-center gap-0">
+                      {jobData?.mustHaveSkills?.filter(s => s.skillName.trim() !== "").slice(0, 2).map((skill, i) => (
                         <SkillPill key={i} name={skill.skillName} color="blue" />
                       ))}
                       {jobData?.mustHaveSkills?.filter(s => s.skillName.trim() !== "").length === 0 && "-"}
                     </div>
-                    {jobData?.mustHaveSkills?.filter(s => s.skillName.trim() !== "").length > 1 && (
+                    {jobData?.mustHaveSkills?.filter(s => s.skillName.trim() !== "").length > 2 && (
                       <button
                         onClick={() => handleJdShow(jobData.mustHaveSkills.filter(s => s.skillName.trim() !== "").map(s => s.skillName).join(", "), "Nice to Have Skills")}
                         className="mt-1 text-xs text-[#800080] hover:text-[#6a006a] font-medium transition-colors"
@@ -253,9 +253,9 @@ export function Jobs() {
 
 
                   {/* Mandatory Skills */}
-                  <td className="px-4 py-3 text-center" style={{ minWidth: "160px", maxWidth: "200px" }}>
-                    <div className="flex flex-wrap justify-center gap-0 max-h-[44px] overflow-hidden">
-                      {jobData?.mandatorySkills?.filter(s => s.skillName.trim() !== "").map((skill, i) => (
+                  <td className="px-4 py-3 text-center" style={{ minWidth: "220px", maxWidth: "280px" }}>
+                    <div className="flex flex-wrap justify-center gap-0">
+                      {jobData?.mandatorySkills?.filter(s => s.skillName.trim() !== "").slice(0, 2).map((skill, i) => (
                         <SkillPill key={i} name={skill.skillName} color="purple" />
                       ))}
                       {jobData?.mandatorySkills?.filter(s => s.skillName.trim() !== "").length === 0 && "-"}
