@@ -51,7 +51,7 @@ const CODING_TOTALS: Totals = {
 };
 const CODING_ENDPOINTS: ByEndpoint = {
   'question_generation': { requests: 128, total_tokens: 24500, total_cost_usd: 0.0312 },
-  'answer_evaluation':   { requests: 98,  total_tokens: 18200, total_cost_usd: 0.0241 },
+  'answer_evaluation': { requests: 98, total_tokens: 18200, total_cost_usd: 0.0241 },
 };
 
 /* ═══ Animated counter hook ════════════════════════════════ */
@@ -73,7 +73,7 @@ function useCountUp(target: number, duration = 1.6, decimals = 0, resetKey?: str
     };
     raf.current = requestAnimationFrame(step);
     return () => { if (raf.current) cancelAnimationFrame(raf.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target, resetKey]);
 
   return display;
@@ -119,8 +119,8 @@ const AnimatedNumber = ({
 
 /* ═══ Tab config ════════════════════════════════════════════ */
 const TABS = [
-  { id: 'interview', label: 'AI Interview',       icon: Brain },
-  { id: 'coding',   label: 'Coding Assessment',   icon: Code2 },
+  { id: 'interview', label: 'AI Interview', icon: Brain },
+  { id: 'coding', label: 'Coding Assessment', icon: Code2 },
 ] as const;
 type TabId = typeof TABS[number]['id'];
 
@@ -136,12 +136,12 @@ const GptCost = () => {
   const [showFilter, setShowFilter] = useState(false);
 
   // Filter state
-  const [userId, setUserId]       = useState('');
+  const [userId, setUserId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate]     = useState('');
-  const [endpoint, setEndpoint]   = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [endpoint, setEndpoint] = useState('');
   const [activeFilters, setActiveFilters] = useState(0);
 
   const fetchData = async (params?: { user_id?: string; start_date?: string; end_date?: string; endpoint?: string }) => {
@@ -149,13 +149,12 @@ const GptCost = () => {
     isInitial ? setLoading(true) : setFilterLoading(true);
     try {
       const query = new URLSearchParams();
-      if (params?.user_id)    query.set('user_id',    params.user_id);
+      if (params?.user_id) query.set('user_id', params.user_id);
       if (params?.start_date) query.set('start_date', params.start_date);
-      if (params?.end_date)   query.set('end_date',   params.end_date);
-      if (params?.endpoint)   query.set('endpoint',   params.endpoint);
-      const url = `https://aiinterviewpythonmain.bestworks.cloud/api/v1/gpt-cost/summary${
-        query.toString() ? '?' + query.toString() : ''
-      }`;
+      if (params?.end_date) query.set('end_date', params.end_date);
+      if (params?.endpoint) query.set('endpoint', params.endpoint);
+      const url = `https://aiinterviewpythonmain.bestworks.cloud/api/v1/gpt-cost/summary${query.toString() ? '?' + query.toString() : ''
+        }`;
       const res = await axios.get(url);
       if (res.data.success) setInterviewData(res.data);
     } catch (err) {
@@ -165,8 +164,8 @@ const GptCost = () => {
     }
   };
 
-  useEffect(() => { 
-    fetchData(); 
+  useEffect(() => {
+    fetchData();
     dispatch(getCandidateData() as any);
   }, [dispatch]);
 
@@ -174,10 +173,10 @@ const GptCost = () => {
     const count = [userId, startDate, endDate, endpoint].filter(Boolean).length;
     setActiveFilters(count);
     fetchData({
-      user_id:    userId    || undefined,
+      user_id: userId || undefined,
       start_date: startDate || undefined,
-      end_date:   endDate   || undefined,
-      endpoint:   endpoint  || undefined,
+      end_date: endDate || undefined,
+      endpoint: endpoint || undefined,
     });
   };
 
@@ -198,24 +197,24 @@ const GptCost = () => {
 
   /* Pick data based on tab — completely isolated */
   const totals: Totals = activeTab === 'interview'
-    ? (interviewData?.totals ?? { total_requests:0,total_input_tokens:0,total_output_tokens:0,total_tokens:0,total_input_cost_usd:0,total_output_cost_usd:0,total_cost_usd:0 })
+    ? (interviewData?.totals ?? { total_requests: 0, total_input_tokens: 0, total_output_tokens: 0, total_tokens: 0, total_input_cost_usd: 0, total_output_cost_usd: 0, total_cost_usd: 0 })
     : CODING_TOTALS;
 
   const byEndpoint: ByEndpoint = activeTab === 'interview'
     ? (interviewData?.by_endpoint ?? {})
     : CODING_ENDPOINTS;
 
-  const inputPct  = (totals.total_input_tokens  / (totals.total_tokens || 1)) * 100;
+  const inputPct = (totals.total_input_tokens / (totals.total_tokens || 1)) * 100;
   const outputPct = (totals.total_output_tokens / (totals.total_tokens || 1)) * 100;
-  const avgCost   = totals.total_cost_usd / (totals.total_requests || 1);
+  const avgCost = totals.total_cost_usd / (totals.total_requests || 1);
   const rk = activeTab; // resetKey triggers re-animation on tab switch
 
   const itemV = {
-    hidden:  { y: 24, opacity: 0, scale: 0.97 },
+    hidden: { y: 24, opacity: 0, scale: 0.97 },
     visible: { y: 0, opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 90, damping: 15 } },
   };
   const wrapV = {
-    hidden:  { opacity: 0 },
+    hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
 
@@ -237,10 +236,10 @@ const GptCost = () => {
           <h1 className="text-3xl font-bold" style={{ background: 'linear-gradient(135deg, #800080, #b300b3)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             GPT Usage Analytics
           </h1>
-          <p className="text-gray-500 mt-1 flex items-center gap-2 text-sm">
+          {/* <p className="text-gray-500 mt-1 flex items-center gap-2 text-sm">
             <Clock className="w-4 h-4" />
             Detailed breakdown of API expenditure and token consumption
-          </p>
+          </p> */}
         </div>
         <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border shadow-sm"
           style={{ background: '#fff0ff', color: '#800080', borderColor: '#e5b3e5' }}>
@@ -258,9 +257,8 @@ const GptCost = () => {
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
-                className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 ${
-                  active ? 'text-white' : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 ${active ? 'text-white' : 'text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 {active && (
                   <motion.div
@@ -307,11 +305,11 @@ const GptCost = () => {
         {activeTab === 'interview' && showFilter && (
           <motion.div
             initial={{ opacity: 0, height: 0, y: -8, overflow: 'hidden' }}
-            animate={{ 
-              opacity: 1, 
-              height: 'auto', 
+            animate={{
+              opacity: 1,
+              height: 'auto',
               y: 0,
-              transitionEnd: { overflow: 'visible' } 
+              transitionEnd: { overflow: 'visible' }
             }}
             exit={{ opacity: 0, height: 0, y: -8, overflow: 'hidden' }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
