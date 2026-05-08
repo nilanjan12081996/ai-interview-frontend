@@ -2,6 +2,7 @@ import { Search, Link as LinkIcon, Video, FileText, MessageSquare, Code, Downloa
 import { useDispatch, useSelector } from "react-redux"
 import { useEffect, useState, useRef } from "react"
 import { getCandidateData, reScheduleInterview, deleteCandidate, generateCodingQuestions, updateCandidate } from "../Reducer/CandidateSlice"
+import axios from 'axios';
 
 import { IoMdEye } from "react-icons/io"
 import LinkModal from "./Modals/LinkModal"
@@ -13,6 +14,34 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "flowbite-react"
 
 const PAGE_SIZE = 10
+
+// ─── Cost Cell Component ──────────────────────────────────────────────────────
+const CostCell = ({ candidateId }) => {
+  const [cost, setCost] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (candidateId) {
+      axios
+        .get(`https://aiinterviewpythonmain.bestworks.cloud/api/v1/gpt-cost/summary?user_id=${candidateId}`)
+        .then((res) => {
+          if (res.data.success) {
+            setCost(res.data.totals.total_cost_usd);
+          }
+        })
+        .catch(() => setCost(0))
+        .finally(() => setLoading(false));
+    }
+  }, [candidateId]);
+
+  if (loading) return <div className="h-4 w-10 bg-gray-100 animate-pulse rounded mx-auto" />;
+  
+  return (
+    <span className="font-bold text-emerald-600 text-[11px] tabular-nums">
+      ${cost !== null ? cost.toFixed(4) : "0.0000"}
+    </span>
+  );
+};
 
 // ─── Resend Modal ─────────────────────────────────────────────────────────────
 function ResendModal({ open, setOpen, candidate }) {
@@ -68,9 +97,12 @@ function ResendModal({ open, setOpen, candidate }) {
 
         if (res?.payload?.statusCode === 200 || res?.payload?.status) {
           const token = res.payload.token
+          // Fire-and-forget: coding question generation runs in background
+          // Modal closes immediately — no UI block for this long-running call
           if (isCoding && token) {
-            setStatusMessage("Preparing coding assessment questions...")
-            await dispatch(generateCodingQuestions({ token }))
+            dispatch(generateCodingQuestions({ token })).catch(() => {
+              // silently ignore — background task
+            })
           }
           toast.success(res?.payload?.message || "Link resent successfully!")
           dispatch(getCandidateData()) // Refresh list
@@ -413,7 +445,7 @@ export function Candidates() {
   const HEADERS = [
     "Candidate", "Email", "Phone", "Added By", "Recruiter Email", "Resume",
     "Client Name", "Interview Date", "Timing",
-    "Interview Status", "Resources", "Report",
+    "Interview Status", "AI Interview Cost", "Coding Assessment Cost", "Resources", "Report",
     "Resend Link", "Actions",
   ]
 
@@ -523,6 +555,16 @@ export function Candidates() {
                       </div>
                     </td>
 
+                    {/* AI Interview Cost */}
+                    <td className="px-4 py-3 text-center">
+                      <CostCell candidateId={candidate.id} />
+                    </td>
+
+                    {/* Coding Assessment Cost */}
+                    <td className="px-4 py-3 text-center">
+                      <span className="text-xs text-gray-400">—</span>
+                    </td>
+
                     {/* Resources */}
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-0.5">
@@ -544,9 +586,9 @@ export function Candidates() {
                         <IconBtn title="Feedback" color="text-green-500">
                           <MessageSquare className="w-3.5 h-3.5" />
                         </IconBtn>
-                        <IconBtn title="Coding Assessment" color="text-[#800080]">
+                        {/* <IconBtn title="Coding Assessment" color="text-[#800080]">
                           <Code className="w-3.5 h-3.5" />
-                        </IconBtn>
+                        </IconBtn> */}
                         <IconBtn title="Access Denied Info" color="text-[#800080]"
                           onClick={() => handleOpenAccessDenied(candidate)}>
                           <MdDesktopAccessDisabled className="w-3.5 h-3.5" />

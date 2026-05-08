@@ -54,9 +54,12 @@ const InterviewModal = ({
     try {
       const res = await dispatch(scheduleInterview(payloadData));
       if (res?.payload?.statusCode === 201) {
-        if (data.isCoding) {
-          setStatusMessage("Preparing coding assessment questions... This might take a few moments.");
-          await dispatch(generateCodingQuestions({ token: res.payload.token }));
+        // Fire-and-forget: coding question generation runs in background
+        // Modal closes immediately — no UI block for this long-running call
+        if (data.isCoding && res.payload.token) {
+          dispatch(generateCodingQuestions({ token: res.payload.token })).catch(() => {
+            // silently ignore — background task
+          });
         }
         toast.success(res?.payload?.message || "Interview Scheduled Successfully.");
         setIsProcessing(false);
