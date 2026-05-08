@@ -14,6 +14,7 @@ import CandidateByJob from "./pages/CandidateByJob"
 import Setting from "./pages/Setting"
 import Coding from "./pages/Coding"
 import GptCost from "./pages/GptCost"
+import { ProfilePage } from "./pages/ProfilePage"
 
 const RoutesConfig = [
   // =========================
@@ -92,6 +93,10 @@ const RoutesConfig = [
       {
         path: "gpt-cost",
         element: <GptCost />,
+      },
+      {
+        path: "profile",
+        element: <ProfilePage />,
       },
     ],
   },

@@ -44,7 +44,7 @@ export const scheduleInterview = createAsyncThunk(
     async ({ userInput, coding, interview }, { rejectWithValue }) => {
         try {
             // 2. Added the missing '&' between coding and interview
-            const url = `/interview/schedule?coding=${coding}&interview=${interview}`;
+            const url = `/interview/schedule?coding=${coding}&interview=${interview}&interviewTime=0&codingTime=0`;
 
             const response = await api.post(url, userInput);
 

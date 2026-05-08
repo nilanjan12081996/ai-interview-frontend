@@ -197,10 +197,21 @@ import {
 import { Outlet, useNavigate, useLocation } from "react-router-dom"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { logout } from "../Reducer/AuthSlice"
+import { getProfile } from "../Reducer/ProfileSlice"
 import LogoutModal from "../pages/Modals/LogoutModal"
 import GptCostSummary from "../components/GptCostSummary"
+
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu"
 
 
 export function InsideLayout() {
@@ -212,6 +223,24 @@ export function InsideLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useDispatch()
+  const { profileData } = useSelector((state) => state.profile)
+
+  React.useEffect(() => {
+    dispatch(getProfile())
+  }, [dispatch])
+
+  const getInitials = (name) => {
+    if (!name) return "AD";
+    const parts = name.split(" ");
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const displayName = profileData?.firstname || profileData?.firstName || profileData?.f_name
+    ? `${profileData.firstname || profileData.firstName || profileData.f_name} ${profileData.lastname || profileData.lastName || profileData.l_name || ''}`.trim() 
+    : (profileData?.name || 'User');
+  const avatarUrl = profileData?.avatarUrl || profileData?.avatar || profileData?.profileImage || "";
+
   const user_type = sessionStorage.getItem("role")
   const navItems = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
@@ -350,9 +379,40 @@ export function InsideLayout() {
               <Bell className="h-5 w-5" />
             </Button>
 
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-sm font-medium text-[#800080]">
-              AD
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-sm font-medium text-[#800080] outline-none">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={avatarUrl} alt={displayName} />
+                    <AvatarFallback className="bg-purple-100 text-[#800080]">{getInitials(displayName)}</AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-white shadow-xl rounded-md border border-gray-100 z-50 mt-2">
+                <DropdownMenuLabel className="font-normal px-4 py-3">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-semibold text-gray-900 leading-none">{displayName}</p>
+                    <p className="text-xs text-gray-500 mt-1 truncate">
+                      {profileData?.email || "admin@interviewer.ai"}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-gray-100" />
+                <DropdownMenuItem className="cursor-pointer px-4 py-2 hover:bg-purple-50 hover:text-[#800080] transition-colors" onClick={() => navigate("/profile")}>
+                  <UserCog className="mr-3 h-4 w-4" />
+                  <span className="font-medium text-sm">View Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer px-4 py-2 hover:bg-gray-50 transition-colors" onClick={() => navigate("/settings")}>
+                  <Settings className="mr-3 h-4 w-4" />
+                  <span className="font-medium text-sm">Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-gray-100" />
+                <DropdownMenuItem className="text-red-600 focus:text-red-600 hover:bg-red-50 focus:bg-red-50 cursor-pointer px-4 py-2 transition-colors" onClick={handleLogout}>
+                  <LogOut className="mr-3 h-4 w-4" />
+                  <span className="font-medium text-sm">Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
