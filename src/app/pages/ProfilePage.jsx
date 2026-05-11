@@ -83,7 +83,8 @@ export function ProfilePage() {
     );
   }
 
-  const avatarUrl = profileData?.avatarUrl || profileData?.avatar || profileData?.profileImage;
+  const avatarUrlRaw = profileData?.avatarUrl || profileData?.avatar || profileData?.profileImage || "";
+  const avatarUrl = avatarUrlRaw.replace(/([^:])\/\/+/g, '$1/');
   const displayName = profileData?.firstname || profileData?.firstName || profileData?.f_name
     ? `${profileData.firstname || profileData.firstName || profileData.f_name} ${profileData.lastname || profileData.lastName || profileData.l_name || ''}`.trim()
     : (profileData?.name || 'User');

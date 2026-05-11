@@ -562,7 +562,9 @@ export function Candidates() {
 
                     {/* Coding Assessment Cost */}
                     <td className="px-4 py-3 text-center">
-                      <span className="text-xs text-gray-400">—</span>
+                      <span className="font-bold text-emerald-600 text-[11px] tabular-nums">
+                        ${(parseFloat(candidate.codingDTO?.aiCost) || 0).toFixed(4)}
+                      </span>
                     </td>
 
                     {/* Resources */}
