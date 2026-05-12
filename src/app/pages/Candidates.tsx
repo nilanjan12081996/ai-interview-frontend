@@ -565,7 +565,21 @@ export function Candidates() {
                     {/* Coding Assessment Cost */}
                     <td className="px-4 py-3 text-center">
                       <span className="font-bold text-emerald-600 text-[11px] tabular-nums">
-                        ${(parseFloat(candidate.codingDTO?.aiCost) || 0).toFixed(4)}
+                        ${(() => {
+                          try {
+                            const aiCost = candidate.codingDTO?.aiCost;
+                            if (!aiCost) return "0.0000";
+                            // If it's a JSON string, parse it
+                            if (typeof aiCost === 'string' && aiCost.startsWith('{')) {
+                              const parsed = JSON.parse(aiCost);
+                              return (parseFloat(parsed.totals?.total_cost_usd) || 0).toFixed(4);
+                            }
+                            // Otherwise treat as a direct number/string
+                            return (parseFloat(aiCost) || 0).toFixed(4);
+                          } catch (e) {
+                            return "0.0000";
+                          }
+                        })()}
                       </span>
                     </td>
 
@@ -587,8 +601,12 @@ export function Candidates() {
                         >
                           <Video className="w-3.5 h-3.5" />
                         </IconBtn>
-                        <IconBtn title="Transcription" color="text-gray-500"
-                          onClick={() => window.open(`${baseUrl}${candidate.transcription}`, "_blank")}>
+                        <IconBtn 
+                          title={candidate.transcription ? "Transcription" : "transcription not available"} 
+                          color="text-gray-500"
+                          disabled={!candidate.transcription}
+                          onClick={() => window.open(`${baseUrl}${candidate.transcription}`, "_blank")}
+                        >
                           <FileText className="w-3.5 h-3.5" />
                         </IconBtn>
                         <IconBtn title="Feedback" color="text-green-500">
