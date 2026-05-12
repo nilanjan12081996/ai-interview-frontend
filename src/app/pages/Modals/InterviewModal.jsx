@@ -17,7 +17,7 @@ const InterviewModal = ({
   const dispatch = useDispatch()
   const { loading } = useSelector((state) => state?.candidate)
   const [selectedFile, setSelectedFile] = useState(null);
-  const [isCoding, setIsCoding] = useState(false);
+  const [isCoding, setIsCoding] = useState(true);
   const [isInterview, setIsInterview] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
@@ -28,7 +28,12 @@ const InterviewModal = ({
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      isCoding: true,
+      isInterview: true
+    }
+  });
 
   const onSubmit = async (data) => {
     setIsProcessing(true);

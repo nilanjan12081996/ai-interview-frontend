@@ -306,12 +306,14 @@ function StatusPill({ status }) {
 }
 
 // ─── Icon Button ──────────────────────────────────────────────────────────────
-function IconBtn({ onClick, title, color = "text-gray-500", children }) {
+function IconBtn({ onClick, title, color = "text-gray-500", disabled, children }) {
   return (
     <button
       title={title}
-      onClick={onClick}
-      className={`flex items-center justify-center w-7 h-7 rounded-md ${color} hover:bg-gray-100 transition-all duration-150 hover:scale-110`}
+      onClick={!disabled ? onClick : undefined}
+      disabled={disabled}
+      className={`flex items-center justify-center w-7 h-7 rounded-md ${color} 
+        ${disabled ? "opacity-30 cursor-not-allowed" : "hover:bg-gray-100 transition-all duration-150 hover:scale-110"}`}
     >
       {children}
     </button>
@@ -602,11 +604,15 @@ const CandidateByJob = () => {
                         onClick={() => { setShareLink(candidate.interviewLink); setOpen(true) }}>
                         <LinkIcon className="w-3.5 h-3.5" />
                       </IconBtn>
-                      <IconBtn title="Recording" color="text-red-500"
+                      <IconBtn 
+                        title={candidate.videoLink ? "Recording" : "video not available"} 
+                        color="text-red-500"
+                        disabled={!candidate.videoLink}
                         onClick={() => {
-                          if (candidate.videoLink) { setShareLink(candidate.videoLink); setOpen(true) }
-                          else alert("Recording not available yet")
-                        }}>
+                          const videoUrl = `${import.meta.env.VITE_PROFILE_API_URL}${candidate.videoLink}`
+                          window.open(videoUrl, "_blank")
+                        }}
+                      >
                         <Video className="w-3.5 h-3.5" />
                       </IconBtn>
                       <IconBtn title="Transcription" color="text-gray-500"
