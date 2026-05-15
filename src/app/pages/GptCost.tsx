@@ -136,7 +136,7 @@ const GptCost = () => {
   const [showFilter, setShowFilter] = useState(false);
 
   // Filter state
-  const [userId, setUserId] = useState('');
+  const [interviewLink, setInterviewLink] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [startDate, setStartDate] = useState('');
@@ -144,12 +144,12 @@ const GptCost = () => {
   const [endpoint, setEndpoint] = useState('');
   const [activeFilters, setActiveFilters] = useState(0);
 
-  const fetchData = async (params?: { user_id?: string; start_date?: string; end_date?: string; endpoint?: string }) => {
+  const fetchData = async (params?: { interview_link?: string; start_date?: string; end_date?: string; endpoint?: string }) => {
     const isInitial = !params;
     isInitial ? setLoading(true) : setFilterLoading(true);
     try {
       const query = new URLSearchParams();
-      if (params?.user_id) query.set('user_id', params.user_id);
+      if (params?.interview_link) query.set('interview_link', params.interview_link);
       if (params?.start_date) query.set('start_date', params.start_date);
       if (params?.end_date) query.set('end_date', params.end_date);
       if (params?.endpoint) query.set('endpoint', params.endpoint);
@@ -170,10 +170,10 @@ const GptCost = () => {
   }, [dispatch]);
 
   const handleApplyFilter = () => {
-    const count = [userId, startDate, endDate, endpoint].filter(Boolean).length;
+    const count = [interviewLink, startDate, endDate, endpoint].filter(Boolean).length;
     setActiveFilters(count);
     fetchData({
-      user_id: userId || undefined,
+      interview_link: interviewLink || undefined,
       start_date: startDate || undefined,
       end_date: endDate || undefined,
       endpoint: endpoint || undefined,
@@ -181,7 +181,7 @@ const GptCost = () => {
   };
 
   const handleClearFilter = () => {
-    setUserId('');
+    setInterviewLink('');
     setSearchTerm('');
     setStartDate('');
     setEndDate('');
@@ -341,7 +341,7 @@ const GptCost = () => {
                       onChange={e => {
                         setSearchTerm(e.target.value);
                         setShowSuggestions(true);
-                        if (!e.target.value) setUserId('');
+                        if (!e.target.value) setInterviewLink('');
                       }}
                       onFocus={() => setShowSuggestions(true)}
                       placeholder="Search name..."
@@ -352,7 +352,7 @@ const GptCost = () => {
                       <button
                         onClick={() => {
                           setSearchTerm('');
-                          setUserId('');
+                          setInterviewLink('');
                           setShowSuggestions(false);
                         }}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
@@ -377,7 +377,7 @@ const GptCost = () => {
                               key={c.id}
                               onClick={() => {
                                 setSearchTerm(c.candidateName);
-                                setUserId(c.id);
+                                setInterviewLink(c.interviewLink);
                                 setShowSuggestions(false);
                               }}
                               className="w-full text-left px-4 py-3 text-sm hover:bg-pink-50 transition-colors flex items-center justify-between group"

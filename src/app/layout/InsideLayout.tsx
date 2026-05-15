@@ -237,7 +237,7 @@ export function InsideLayout() {
   };
 
   const displayName = profileData?.firstname || profileData?.firstName || profileData?.f_name
-    ? `${profileData.firstname || profileData.firstName || profileData.f_name} ${profileData.lastname || profileData.lastName || profileData.l_name || ''}`.trim() 
+    ? `${profileData.firstname || profileData.firstName || profileData.f_name} ${profileData.lastname || profileData.lastName || profileData.l_name || ''}`.trim()
     : (profileData?.name || 'User');
   const avatarUrlRaw = profileData?.avatarUrl || profileData?.avatar || profileData?.profileImage || "";
   const avatarUrl = avatarUrlRaw.replace(/([^:])\/\/+/g, '$1/');
@@ -251,7 +251,7 @@ export function InsideLayout() {
     ...(user_type === "SUPER_ADMIN"
       ? [{ path: "/hr", label: "Recruiter Management", icon: UserCog }]
       : []),
-    { path: "/gpt-cost", label: "GPT Cost", icon: DollarSign },
+    // { path: "/gpt-cost", label: "GPT Cost", icon: DollarSign },
     { path: "/settings", label: "Settings", icon: Settings },
   ]
 
@@ -376,9 +376,9 @@ export function InsideLayout() {
               <Input placeholder="Search..." className="w-64 pl-9" />
             </div> */}
 
-            <Button variant="ghost" size="icon">
+            {/* <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
-            </Button>
+            </Button> */}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

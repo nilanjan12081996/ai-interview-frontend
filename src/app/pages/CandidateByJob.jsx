@@ -12,20 +12,21 @@ import { MdDesktopAccessDisabled } from "react-icons/md"
 import { reScheduleInterview, deleteCandidate, updateCandidate } from "../Reducer/CandidateSlice"
 import { toast, ToastContainer } from "react-toastify"
 import AccessDeniedModal from "./Modals/AccessDeniedModal"
+import CodingAssessmentModal from "./Modals/CodingAssessmentModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../components/ui/Dialog"
 import { Button } from "flowbite-react"
 
 const PAGE_SIZE = 10
 
 // ─── Cost Cell Component ──────────────────────────────────────────────────────
-const CostCell = ({ candidateId }) => {
+const CostCell = ({ interviewLink }) => {
   const [cost, setCost] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (candidateId) {
+    if (interviewLink) {
       axios
-        .get(`https://aiinterviewpythonmain.bestworks.cloud/api/v1/gpt-cost/summary?user_id=${candidateId}`)
+        .get(`https://aiinterviewpythonmain.bestworks.cloud/api/v1/gpt-cost/summary?interview_link=${interviewLink}`)
         .then((res) => {
           if (res.data.success) {
             setCost(res.data.totals.total_cost_usd);
@@ -34,7 +35,7 @@ const CostCell = ({ candidateId }) => {
         .catch(() => setCost(0))
         .finally(() => setLoading(false));
     }
-  }, [candidateId]);
+  }, [interviewLink]);
 
   if (loading) return <div className="h-4 w-10 bg-gray-100 animate-pulse rounded mx-auto" />;
   
@@ -383,6 +384,10 @@ const CandidateByJob = () => {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [open, setOpen] = useState(false) // LinkModal
   const [accessDeniedModal, setAccessDeniedModal] = useState(false)
+  
+  // Coding modal state
+  const [codingModalOpen, setCodingModalOpen] = useState(false)
+  const [codingData, setCodingData] = useState(null)
 
   // Resend modal state
   const [resendModalOpen, setResendModalOpen] = useState(false)
@@ -410,6 +415,15 @@ const CandidateByJob = () => {
   const openResendModal = (candidate) => {
     setResendCandidate(candidate)
     setResendModalOpen(true)
+  }
+
+  const handleOpenCodingModal = (candidate) => {
+    if (candidate.codingDTO?.questionData) {
+      setCodingData(candidate.codingDTO.questionData)
+      setCodingModalOpen(true)
+    } else {
+      toast.info("No coding assessment data available for this candidate.")
+    }
   }
 
   // --- Delete Handler ---
@@ -587,7 +601,7 @@ const CandidateByJob = () => {
 
                   {/* AI Interview Cost */}
                   <td className="px-4 py-3 text-center">
-                    <CostCell candidateId={candidate.id} />
+                    <CostCell interviewLink={candidate.interviewLink} />
                   </td>
 
                   {/* Coding Assessment Cost */}
@@ -640,9 +654,14 @@ const CandidateByJob = () => {
                       <IconBtn title="Feedback" color="text-green-500">
                         <MessageSquare className="w-3.5 h-3.5" />
                       </IconBtn>
-                      {/* <IconBtn title="Coding Assessment" color="text-[#800080]">
+                      <IconBtn 
+                        title={candidate.codingDTO?.questionData ? "Coding Assessment" : "coding assessment not available"} 
+                        color="text-[#800080]"
+                        disabled={!candidate.codingDTO?.questionData}
+                        onClick={() => handleOpenCodingModal(candidate)}
+                      >
                         <Code className="w-3.5 h-3.5" />
-                      </IconBtn> */}
+                      </IconBtn>
                       <IconBtn title="Access Denied Info" color="text-[#800080]"
                         onClick={() => handleOpenAccessDenied(candidate)}>
                         <MdDesktopAccessDisabled className="w-3.5 h-3.5" />
@@ -740,6 +759,12 @@ const CandidateByJob = () => {
           jobId={id}
         />
       )}
+
+      <CodingAssessmentModal
+        open={codingModalOpen}
+        setOpen={setCodingModalOpen}
+        codingData={codingData}
+      />
     </div>
   )
 }

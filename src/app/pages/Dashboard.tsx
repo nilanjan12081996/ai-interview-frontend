@@ -9,7 +9,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  TooltipProps,
 } from "recharts"
 import { useDispatch, useSelector } from "react-redux"
 import { useEffect } from "react"
