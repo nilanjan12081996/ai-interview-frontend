@@ -22,7 +22,8 @@ const GptCostSummary: React.FC<GptCostSummaryProps> = ({ sidebarOpen }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('https://aiinterviewpythonmain.bestworks.cloud/api/v1/gpt-cost/summary');
+        const baseUrl = import.meta.env.VITE_PYTHON_API_URL || 'https://aiinterviewpythonmain.bestworks.cloud';
+        const response = await axios.get(`${baseUrl}/api/v1/gpt-cost/summary`);
         if (response.data.success) {
           setData(response.data);
         }

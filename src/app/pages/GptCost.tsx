@@ -153,7 +153,8 @@ const GptCost = () => {
       if (params?.start_date) query.set('start_date', params.start_date);
       if (params?.end_date) query.set('end_date', params.end_date);
       if (params?.endpoint) query.set('endpoint', params.endpoint);
-      const url = `https://aiinterviewpythonmain.bestworks.cloud/api/v1/gpt-cost/summary${query.toString() ? '?' + query.toString() : ''
+      const baseUrl = import.meta.env.VITE_PYTHON_API_URL || 'https://aiinterviewpythonmain.bestworks.cloud';
+      const url = `${baseUrl}/api/v1/gpt-cost/summary${query.toString() ? '?' + query.toString() : ''
         }`;
       const res = await axios.get(url);
       if (res.data.success) setInterviewData(res.data);

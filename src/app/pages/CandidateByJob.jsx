@@ -11,6 +11,7 @@ import LinkModal from "./Modals/LinkModal"
 import { MdDesktopAccessDisabled } from "react-icons/md"
 import { reScheduleInterview, deleteCandidate, updateCandidate } from "../Reducer/CandidateSlice"
 import { toast, ToastContainer } from "react-toastify"
+import { getInterviewResult } from "../Reducer/InterviewResultSlice"
 import AccessDeniedModal from "./Modals/AccessDeniedModal"
 import CodingAssessmentModal from "./Modals/CodingAssessmentModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../components/ui/Dialog"
@@ -25,8 +26,9 @@ const CostCell = ({ interviewLink }) => {
 
   useEffect(() => {
     if (interviewLink) {
+      const baseUrl = import.meta.env.VITE_PYTHON_API_URL || 'https://aiinterviewpythonmain.bestworks.cloud';
       axios
-        .get(`https://aiinterviewpythonmain.bestworks.cloud/api/v1/gpt-cost/summary?interview_link=${interviewLink}`)
+        .get(`${baseUrl}/api/v1/gpt-cost/summary?interview_link=${interviewLink}`)
         .then((res) => {
           if (res.data.success) {
             setCost(res.data.totals.total_cost_usd);
@@ -44,6 +46,39 @@ const CostCell = ({ interviewLink }) => {
       ${cost !== null ? cost.toFixed(4) : "0.0000"}
     </span>
   );
+};
+
+// ─── Result Cell Component ────────────────────────────────────────────────────
+const ResultCell = ({ interviewLink, round }) => {
+  const dispatch = useDispatch();
+  const results = useSelector(state => state.interviewResult?.results || {});
+  const resultData = results[interviewLink];
+  
+  useEffect(() => {
+    if (interviewLink && !resultData) {
+      const token = interviewLink.split('/').pop();
+      dispatch(getInterviewResult({ token, interviewLink }));
+    }
+  }, [interviewLink, resultData, dispatch]);
+
+  if (!resultData) return <StatusPill status="Pending" />;
+
+  const roundData = resultData[round];
+  
+  let status = "Pending";
+  if (roundData) {
+    if (roundData.selected === true) {
+      status = "Selected";
+    } else {
+      if (roundData.borderline === true) {
+        status = "Borderline Selected";
+      } else {
+        status = "Rejected";
+      }
+    }
+  }
+
+  return <StatusPill status={status} />;
 };
 
 // ─── Resend Modal ─────────────────────────────────────────────────────────────
@@ -296,6 +331,10 @@ function StatusPill({ status }) {
   const map = {
     Completed:  { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500" },
     Incomplete: { bg: "bg-amber-50",   text: "text-amber-700",   dot: "bg-amber-500"   },
+    Pending:    { bg: "bg-gray-100",   text: "text-gray-600",    dot: "bg-gray-500"    },
+    Selected:   { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500" },
+    Rejected:   { bg: "bg-red-50",     text: "text-red-600",     dot: "bg-red-500"     },
+    "Borderline Selected": { bg: "bg-blue-50", text: "text-blue-700", dot: "bg-blue-500" },
   }
   const s = map[status] ?? { bg: "bg-gray-100", text: "text-gray-600", dot: "bg-gray-400" }
   return (
@@ -376,7 +415,7 @@ function Pagination({ total, page, onPage }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const CandidateByJob = () => {
-  const baseUrl = "https://api.interviewfold.com"
+  const baseUrl = import.meta.env.VITE_MAIN_API_URL || "https://api.interviewfold.com"
   const { candidateByJobData } = useSelector((state) => state?.jobs)
   
   // Modals state
@@ -461,7 +500,7 @@ const CandidateByJob = () => {
   const HEADERS = [
     "Candidate", "Email", "Phone", "Added By", "Recruiter Email", "Resume",
     "Client Name", "Interview Date", "Timing",
-    "Interview Status", "AI Interview Cost", "Coding Assessment Cost", "Resources", "Report",
+    "Interview Status", "Ai Interview Result", "Coding Assessment Result", "Final Interview Result", "AI Interview Cost", "Coding Assessment Cost", "Resources", "Report",
     "Resend Link", "Actions",
   ]
 
@@ -596,6 +635,27 @@ const CandidateByJob = () => {
                   <td className="px-4 py-3">
                     <div className="flex justify-center">
                       <StatusPill status={candidate.is_complete === 1 ? "Completed" : "Incomplete"} />
+                    </div>
+                  </td>
+
+                  {/* Ai Interview Result */}
+                  <td className="px-4 py-3">
+                    <div className="flex justify-center">
+                      <ResultCell interviewLink={candidate.interviewLink} round="ai_interview" />
+                    </div>
+                  </td>
+
+                  {/* Coding Assessment Result */}
+                  <td className="px-4 py-3">
+                    <div className="flex justify-center">
+                      <ResultCell interviewLink={candidate.interviewLink} round="coding_interview" />
+                    </div>
+                  </td>
+
+                  {/* Final Interview Result */}
+                  <td className="px-4 py-3">
+                    <div className="flex justify-center">
+                      <ResultCell interviewLink={candidate.interviewLink} round="final_interview" />
                     </div>
                   </td>
 
@@ -792,7 +852,7 @@ export default CandidateByJob
 // import AccessDeniedModal from "./Modals/AccessDeniedModal"
 // const CandidateByJob=()=>{
 //   //const baseUrl="http://localhost:8085";
-//   const baseUrl="https://api.interviewfold.com";
+//   const baseUrl= import.meta.env.VITE_MAIN_API_URL || "https://api.interviewfold.com";
 //     const{candidateByJobData}=useSelector((state)=>state?.jobs)
 //      const[inviteModalOpen,setInviteModalOpen]=useState(false)
 //       const [shareLink, setShareLink] = useState(null);

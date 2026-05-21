@@ -63,7 +63,7 @@ export const generateCodingQuestions = createAsyncThunk(
     'generateCodingQuestions',
     async (payload, { rejectWithValue }) => {
         try {
-            const response = await api.post('https://api.interviewfold.com/api/coding/generate', payload);
+            const response = await api.post(`${import.meta.env.VITE_MAIN_API_URL}/api/coding/generate`, payload);
             return response.data;
         } catch (err) {
 

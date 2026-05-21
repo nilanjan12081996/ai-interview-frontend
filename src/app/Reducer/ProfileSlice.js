@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "../../store/Api";
 
-const PROFILE_BASE_URL = import.meta.env.VITE_PROFILE_API_URL;
+const PROFILE_BASE_URL = import.meta.env.VITE_MAIN_API_URL;
 
 export const getProfile = createAsyncThunk(
     'profile/getProfile',
@@ -104,7 +104,7 @@ const ProfileSlice = createSlice({
             })
             .addCase(updateAvatar.fulfilled, (state, { payload }) => {
                 state.updateAvatarLoading = false;
-                if(state.profileData) {
+                if (state.profileData) {
                     state.profileData.avatarUrl = payload.avatarUrl;
                 }
             })
