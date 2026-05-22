@@ -11,6 +11,18 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
 
   if (!open) return null;
 
+  // Parse the new analysis string if available
+  let parsedAnalysis = {};
+  try {
+    if (analysisData?.analysis) {
+      parsedAnalysis = typeof analysisData.analysis === 'string' 
+        ? JSON.parse(analysisData.analysis) 
+        : analysisData.analysis;
+    }
+  } catch(e) {
+    console.error("Failed to parse analysis JSON", e);
+  }
+
   // Safe data extraction
   const candidateName = analysisData?.candidateName || "Candidate Name";
   const candidateEmail = analysisData?.candidateEmail || "email@example.com";
@@ -20,9 +32,35 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
   const interviewLink = analysisData?.interviewLink || "";
   const videoLink = analysisData?.videoLink || "";
   const transcriptLink = analysisData?.transcriptionLink || "";
-  const score = analysisData?.score || 0;
+  const score = parsedAnalysis.overall_score || analysisData?.score || 0;
   
-  const mandatorySkills = jobData?.mandatorySkills || [];
+  const categoryScores = parsedAnalysis.category_scores || {
+    technical_area: 0,
+    communication_skills: 0,
+    project_experience: 0,
+    behavioral_fit: 0,
+    critical_thinking: 0
+  };
+
+  const mustToHaveSkills = parsedAnalysis.must_to_have_skills || [];
+  const topStrengths = parsedAnalysis.top_strengths || [];
+  const areasForImprovement = parsedAnalysis.areas_for_improvement || [];
+  const interviewQuestionsResponses = parsedAnalysis.interview_questions_responses || [];
+  const overallAiSummary = parsedAnalysis.overall_ai_summary || "";
+
+  let codingQuestions = [];
+  let codingAnswers = [];
+  try {
+    if (analysisData?.codingDTO?.questionData) {
+      const parsedQuestionData = JSON.parse(analysisData.codingDTO.questionData);
+      codingQuestions = parsedQuestionData.questions || [];
+    }
+    if (analysisData?.codingDTO?.answers) {
+      codingAnswers = analysisData.codingDTO.answers || [];
+    }
+  } catch (err) {
+    console.error("Failed to parse coding questions", err);
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -188,6 +226,14 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
               </div>
             </div>
 
+            {/* OVERALL AI SUMMARY */}
+            {overallAiSummary && (
+              <div className="mb-6 bg-[#fcf9ff] border border-purple-200 rounded-2xl p-6 shadow-sm print:break-inside-avoid print:shadow-none pt-4 shrink-0">
+                <h3 className="text-xs font-semibold text-[#800080] tracking-widest uppercase mb-3">AI Executive Summary</h3>
+                <p className="text-sm text-gray-700 leading-relaxed italic">{overallAiSummary}</p>
+              </div>
+            )}
+
             {/* CATEGORY SCORES */}
             <div className="mb-6 print:break-inside-avoid pt-4 shrink-0">
               <div className="flex items-center gap-3 mb-6">
@@ -199,14 +245,14 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
               
               <div className="grid grid-cols-5 gap-4">
                 {[
-                  { name: "Technical Area", color: "emerald" },
-                  { name: "Communication Skills", color: "emerald" },
-                  { name: "Project Experience", color: "amber" },
-                  { name: "Behavioral Fit", color: "emerald" },
-                  { name: "Critical Thinking", color: "amber" },
+                  { name: "Technical Area", key: "technical_area", color: "emerald" },
+                  { name: "Communication Skills", key: "communication_skills", color: "emerald" },
+                  { name: "Project Experience", key: "project_experience", color: "amber" },
+                  { name: "Behavioral Fit", key: "behavioral_fit", color: "emerald" },
+                  { name: "Critical Thinking", key: "critical_thinking", color: "amber" },
                 ].map((cat, i) => (
                   <div key={i} className={`bg-white rounded-xl p-4 text-center border border-gray-300 shadow-md border-t-4 print:border-gray-400 print:shadow-none print:border-t-4 ${cat.color === 'emerald' ? 'border-t-emerald-500 print:border-t-emerald-500' : 'border-t-amber-500 print:border-t-amber-500'}`}>
-                    <div className={`text-4xl font-normal mb-3 mt-1 ${cat.color === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`}>0</div>
+                    <div className={`text-4xl font-normal mb-3 mt-1 ${cat.color === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`}>{categoryScores[cat.key] || 0}</div>
                     <div className="w-full h-px bg-gray-200 mb-3"></div>
                     <div className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest mx-auto leading-tight">
                       {cat.name}
@@ -221,12 +267,12 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
               <div className="flex items-center gap-3 mb-6">
                 <h2 className="text-lg font-bold text-gray-900">Must Have Skills</h2>
                 <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold tracking-widest">
-                  {mandatorySkills.length} SKILLS
+                  {mustToHaveSkills.length} SKILLS
                 </span>
               </div>
               
               <div className="space-y-4">
-                {mandatorySkills.map((skill, idx) => {
+                {mustToHaveSkills.map((skill, idx) => {
                   const colors = [
                     { bg: "bg-emerald-500", border: "border-l-emerald-500", text: "text-emerald-600" },
                     { bg: "bg-amber-500", border: "border-l-amber-500", text: "text-amber-600" },
@@ -234,28 +280,31 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
                     { bg: "bg-red-500", border: "border-l-red-500", text: "text-red-600" },
                   ];
                   const c = colors[idx % colors.length];
-                  const skillScore = 0; // default score
-                  const level = "N/A"; // default level
+                  const skillScore = skill.percentage || 0;
+                  const level = skillScore >= 80 ? "Expert" : skillScore >= 60 ? "Intermediate" : "Beginner";
 
                   return (
-                    <div key={skill.id || idx} className={`bg-white rounded-xl p-5 shadow-md border border-gray-300 border-l-4 print:shadow-none print:border-gray-400 ${c.border}`}>
+                    <div key={idx} className={`bg-white rounded-xl p-5 shadow-md border border-gray-300 border-l-4 print:shadow-none print:border-gray-400 ${c.border}`}>
                       <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-bold text-gray-900 capitalize truncate pr-4">{skill.skillName}</h4>
+                        <h4 className="font-bold text-gray-900 capitalize truncate pr-4">{skill.skill_name}</h4>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <span className="text-xs text-gray-500 italic font-medium">{level}</span>
                           <span className={`text-sm font-bold ${c.text}`}>{skillScore}/100</span>
                         </div>
                       </div>
-                      <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mb-3">
                         <div className={`h-full ${c.bg}`} style={{ width: `${skillScore}%` }}></div>
                       </div>
+                      {skill.description && (
+                        <p className="text-sm text-gray-600 mt-2 leading-relaxed">{skill.description}</p>
+                      )}
                     </div>
                   );
                 })}
                 
-                {mandatorySkills.length === 0 && (
+                {mustToHaveSkills.length === 0 && (
                   <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-300 shadow-inner">
-                    No mandatory skills defined for this job.
+                    No mandatory skills data available.
                   </div>
                 )}
               </div>
@@ -265,21 +314,50 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
             <div className="mb-6 grid grid-cols-2 gap-6 print:break-inside-avoid shrink-0 pt-2">
               <div className="flex flex-col h-full">
                 <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  Top Strengths <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">0</span>
+                  Top Strengths <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">{topStrengths.length}</span>
                 </h3>
-                <div className="bg-emerald-50/50 flex-1 border border-emerald-300 rounded-xl p-8 flex flex-col items-center justify-center text-center border-dashed shadow-sm">
-                  <p className="text-sm font-bold text-emerald-700">No data found</p>
-                  <p className="text-xs text-emerald-600/80 mt-1 max-w-[200px] font-medium">Strengths will be populated once AI qualitative analysis is complete.</p>
+                <div className={`flex-1 border rounded-xl p-6 flex flex-col shadow-sm ${topStrengths.length > 0 ? 'bg-emerald-50/30 border-emerald-200' : 'bg-emerald-50/50 border-emerald-300 border-dashed items-center justify-center text-center'}`}>
+                  {topStrengths.length > 0 ? (
+                    <ul className="space-y-3">
+                      {topStrengths.map((str, i) => (
+                        <li key={i} className="flex gap-2 text-sm text-gray-700">
+                          <span className="text-emerald-500 mt-0.5">✓</span>
+                          <span>{str}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <>
+                      <p className="text-sm font-bold text-emerald-700">No data found</p>
+                      <p className="text-xs text-emerald-600/80 mt-1 max-w-[200px] font-medium">Strengths will be populated once AI qualitative analysis is complete.</p>
+                    </>
+                  )}
                 </div>
               </div>
 
               <div className="flex flex-col h-full">
                 <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  Areas for Improvement <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">0</span>
+                  Areas for Improvement <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">{areasForImprovement.length}</span>
                 </h3>
-                <div className="bg-rose-50/50 flex-1 border border-rose-300 rounded-xl p-8 flex flex-col items-center justify-center text-center border-dashed shadow-sm">
-                  <p className="text-sm font-bold text-rose-700">No data found</p>
-                  <p className="text-xs text-rose-600/80 mt-1 max-w-[200px] font-medium">Improvement areas will be populated once AI qualitative analysis is complete.</p>
+                <div className={`flex-1 border rounded-xl p-6 flex flex-col shadow-sm ${areasForImprovement.length > 0 ? 'bg-rose-50/30 border-rose-200' : 'bg-rose-50/50 border-rose-300 border-dashed items-center justify-center text-center'}`}>
+                  {areasForImprovement.length > 0 ? (
+                    <ul className="space-y-4">
+                      {areasForImprovement.map((area, i) => (
+                        <li key={i} className="flex flex-col gap-1">
+                          <div className="flex gap-2">
+                            <span className="text-rose-500 text-sm mt-0.5">⚠</span>
+                            <span className="text-sm font-bold text-gray-800">{area.area}</span>
+                          </div>
+                          <span className="text-xs text-gray-600 ml-5">{area.description}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <>
+                      <p className="text-sm font-bold text-rose-700">No data found</p>
+                      <p className="text-xs text-rose-600/80 mt-1 max-w-[200px] font-medium">Improvement areas will be populated once AI qualitative analysis is complete.</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -287,12 +365,61 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
             {/* INTERVIEW QUESTIONS & RESPONSES */}
             <div className="mb-6 print:break-inside-avoid shrink-0 pt-4">
               <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                Interview Questions & Responses <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider">0 QUESTIONS</span>
+                Interview Questions & Responses <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider">{interviewQuestionsResponses.length} QUESTIONS</span>
               </h3>
-              <div className="bg-gray-50 border border-gray-300 rounded-xl p-10 flex flex-col items-center justify-center text-center border-dashed shadow-sm">
-                <p className="text-sm font-bold text-gray-600">No questions found</p>
-                <p className="text-xs text-gray-500 mt-1 font-medium">Detailed Q&A transcript data is currently unavailable for this session.</p>
-              </div>
+              {interviewQuestionsResponses.length > 0 ? (
+                <div className="space-y-6">
+                  {interviewQuestionsResponses.map((qr, idx) => (
+                    <div key={idx} className="bg-white rounded-xl p-6 shadow-md border border-gray-300 print:shadow-none print:border-gray-400 print:break-inside-avoid">
+                      <div className="flex justify-between items-start gap-4 mb-4">
+                        <h4 className="font-bold text-gray-900 flex-1"><span className="text-[#800080] mr-2">Q{idx + 1}.</span>{qr.question}</h4>
+                        <div className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">
+                          Score: {qr.score}/100
+                        </div>
+                      </div>
+                      
+                      <div className="mb-4">
+                        <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">Response Summary</h5>
+                        <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-200">{qr.response_summary}</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        {qr.key_insights && qr.key_insights.length > 0 && (
+                          <div>
+                            <h5 className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Key Insights</h5>
+                            <ul className="space-y-1.5">
+                              {qr.key_insights.map((insight, i) => (
+                                <li key={i} className="flex gap-2 text-xs text-gray-600">
+                                  <span className="text-emerald-500 mt-0.5">•</span>
+                                  <span>{insight}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {qr.missed_opportunities && qr.missed_opportunities.length > 0 && (
+                          <div>
+                            <h5 className="text-xs font-semibold text-amber-600 uppercase tracking-widest mb-2">Missed Opportunities</h5>
+                            <ul className="space-y-1.5">
+                              {qr.missed_opportunities.map((missed, i) => (
+                                <li key={i} className="flex gap-2 text-xs text-gray-600">
+                                  <span className="text-amber-500 mt-0.5">•</span>
+                                  <span>{missed}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-gray-50 border border-gray-300 rounded-xl p-10 flex flex-col items-center justify-center text-center border-dashed shadow-sm">
+                  <p className="text-sm font-bold text-gray-600">No questions found</p>
+                  <p className="text-xs text-gray-500 mt-1 font-medium">Detailed Q&A transcript data is currently unavailable for this session.</p>
+                </div>
+              )}
             </div>
 
             {/* CODING ROUND */}
@@ -301,19 +428,55 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
                 <h3 className="text-sm font-bold text-gray-900">Coding Round</h3>
                 <span className="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider">LIVE ASSESSMENT</span>
               </div>
-              <div className="bg-[#1e1e2e] border border-gray-800 rounded-xl p-12 text-center shadow-inner relative overflow-hidden print:bg-gray-50 print:border-gray-200 print:shadow-none">
-                {/* Mac window dots */}
-                <div className="absolute top-4 left-4 flex gap-1.5 print:hidden">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
+              
+              {codingQuestions.length > 0 ? (
+                <div className="space-y-6">
+                  {codingQuestions.map((q, idx) => {
+                    const answer = codingAnswers[idx];
+                    let answerText = "No answer submitted";
+                    if (answer) {
+                       answerText = typeof answer === 'string' ? answer : (answer.code || answer.answer || JSON.stringify(answer, null, 2));
+                    }
+                    return (
+                      <div key={idx} className="bg-[#1e1e2e] border border-gray-800 rounded-xl overflow-hidden print:bg-white print:border-gray-200 print:shadow-none print:break-inside-avoid">
+                        <div className="bg-gray-800 px-4 py-2 flex items-center justify-between print:bg-gray-100 print:border-b print:border-gray-200">
+                          <div className="flex gap-1.5 print:hidden">
+                            <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
+                            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
+                            <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
+                          </div>
+                          <span className="text-xs text-gray-400 font-mono print:text-gray-600">{q.language || 'Code'}</span>
+                        </div>
+                        <div className="p-6 text-left">
+                          <h4 className="text-white font-bold mb-2 print:text-black text-lg">{idx + 1}. {q.title}</h4>
+                          <div className="text-sm text-gray-400 mb-6 print:text-gray-600 whitespace-pre-wrap">{q.problemStatement}</div>
+                          
+                          <div className="mt-4">
+                            <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 print:text-gray-500">Candidate's Solution</h5>
+                            <pre className="bg-black/50 p-4 rounded-lg overflow-x-auto text-sm font-mono text-gray-300 print:bg-gray-50 print:text-black print:border print:border-gray-200 whitespace-pre-wrap">
+                              <code>{answerText}</code>
+                            </pre>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                
-                <div className="flex flex-col items-center justify-center pt-2">
-                  <p className="text-sm font-medium text-gray-400 font-mono print:text-gray-500">No coding assessment found</p>
-                  <p className="text-xs text-gray-500/60 mt-2 font-mono print:text-gray-400">// The candidate did not participate in a coding round.</p>
+              ) : (
+                <div className="bg-[#1e1e2e] border border-gray-800 rounded-xl p-12 text-center shadow-inner relative overflow-hidden print:bg-gray-50 print:border-gray-200 print:shadow-none">
+                  {/* Mac window dots */}
+                  <div className="absolute top-4 left-4 flex gap-1.5 print:hidden">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
+                  </div>
+                  
+                  <div className="flex flex-col items-center justify-center pt-2">
+                    <p className="text-sm font-medium text-gray-400 font-mono print:text-gray-500">No coding assessment found</p>
+                    <p className="text-xs text-gray-500/60 mt-2 font-mono print:text-gray-400">// The candidate did not participate in a coding round.</p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* FOOTER - mt-auto pushes it to the absolute bottom of the A4 page */}
