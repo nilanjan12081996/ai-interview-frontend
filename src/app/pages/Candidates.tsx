@@ -3,6 +3,9 @@ import { useDispatch, useSelector } from "react-redux"
 import { useEffect, useState, useRef } from "react"
 import { getCandidateData, reScheduleInterview, deleteCandidate, generateCodingQuestions, updateCandidate } from "../Reducer/CandidateSlice"
 import { getInterviewResult } from "../Reducer/InterviewResultSlice"
+import { getDownloadReportPdf } from "../Reducer/DownloadReportPdfSlice"
+import { getSingleJob } from "../Reducer/JobSlice"
+import ReportPdfModal from "./Modals/ReportPdfModal"
 import axios from 'axios';
 
 import { IoMdEye } from "react-icons/io"
@@ -436,6 +439,11 @@ export function Candidates() {
   // Edit modal states
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [selectedCandidate, setSelectedCandidate] = useState(null)
+  
+  // States for Report PDF Modal
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+  const [currentAnalysisData, setCurrentAnalysisData] = useState(null)
+  const [currentJobData, setCurrentJobData] = useState(null)
 
   // Resend modal states
   const [resendModalOpen, setResendModalOpen] = useState(false)
@@ -449,6 +457,28 @@ export function Candidates() {
   const dispatch = useDispatch()
 
   useEffect(() => { dispatch(getCandidateData()) }, [])
+
+  const handleViewReport = async (candidate) => {
+    try {
+      const token = candidate.interviewLink.split('/').pop();
+      const jobId = candidate.jobId || candidate.job_id;
+      
+      const resAnalysis = await dispatch(getDownloadReportPdf({ token })).unwrap();
+      const resJob = await dispatch(getSingleJob({ id: jobId })).unwrap();
+      
+      console.log("Analysis Data:", resAnalysis);
+      console.log("Job Data:", resJob);
+      
+      setCurrentAnalysisData(resAnalysis?.data || {});
+      setCurrentJobData(resJob?.data || {});
+      setIsReportModalOpen(true);
+      
+      toast.success("APIs called successfully, check network tab");
+    } catch (error) {
+      toast.error("Failed to fetch report data");
+      console.error(error);
+    }
+  };
 
   const handleOpenAccessDenied = (data) => {
     setAccessDeniedModal(true)
@@ -704,7 +734,7 @@ export function Candidates() {
                     <td className="px-4 py-3 text-center">
                       {candidate.analysis ? (
                         <button
-                          onClick={() => window.open(`${baseUrl}${candidate.analysis}`, "_blank")}
+                          onClick={() => handleViewReport(candidate)}
                           className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#800080] text-white hover:bg-[#660066] transition-colors duration-150 whitespace-nowrap shadow-sm"
                         >
                           View Report
@@ -788,6 +818,13 @@ export function Candidates() {
         open={codingModalOpen}
         setOpen={setCodingModalOpen}
         codingData={codingData}
+      />
+
+      <ReportPdfModal
+        open={isReportModalOpen}
+        setOpen={setIsReportModalOpen}
+        analysisData={currentAnalysisData}
+        jobData={currentJobData}
       />
     </div>
   )

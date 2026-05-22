@@ -1,7 +1,7 @@
 import { Search, Link as LinkIcon, Video, FileText, MessageSquare, Code, Download, MoreHorizontal, Plus, ChevronLeft, ChevronRight, Pencil, Trash2 } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
 import { useEffect, useState, useRef } from "react"
-import { getCandidateByJob } from "../Reducer/JobSlice"
+import { getCandidateByJob, getSingleJob } from "../Reducer/JobSlice"
 import axios from 'axios'
 import { useLocation } from "react-router-dom"
 import InterviewModal from "./Modals/InterviewModal"
@@ -12,8 +12,10 @@ import { MdDesktopAccessDisabled } from "react-icons/md"
 import { reScheduleInterview, deleteCandidate, updateCandidate } from "../Reducer/CandidateSlice"
 import { toast, ToastContainer } from "react-toastify"
 import { getInterviewResult } from "../Reducer/InterviewResultSlice"
+import { getDownloadReportPdf } from "../Reducer/DownloadReportPdfSlice"
 import AccessDeniedModal from "./Modals/AccessDeniedModal"
 import CodingAssessmentModal from "./Modals/CodingAssessmentModal"
+import ReportPdfModal from "./Modals/ReportPdfModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../components/ui/Dialog"
 import { Button } from "flowbite-react"
 
@@ -428,6 +430,11 @@ const CandidateByJob = () => {
   const [codingModalOpen, setCodingModalOpen] = useState(false)
   const [codingData, setCodingData] = useState(null)
 
+  // Report Modal state
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+  const [currentAnalysisData, setCurrentAnalysisData] = useState(null)
+  const [currentJobData, setCurrentJobData] = useState(null)
+
   // Resend modal state
   const [resendModalOpen, setResendModalOpen] = useState(false)
   const [resendCandidate, setResendCandidate] = useState(null)
@@ -448,6 +455,28 @@ const CandidateByJob = () => {
   useEffect(() => { 
     if(id) dispatch(getCandidateByJob({ id })) 
   }, [id, dispatch])
+
+  const handleViewReport = async (candidate) => {
+    try {
+      const token = candidate.interviewLink.split('/').pop();
+      const jobId = candidate.jobId || candidate.job_id;
+      
+      const resAnalysis = await dispatch(getDownloadReportPdf({ token })).unwrap();
+      const resJob = await dispatch(getSingleJob({ id: jobId })).unwrap();
+      
+      console.log("Analysis Data:", resAnalysis);
+      console.log("Job Data:", resJob);
+      
+      setCurrentAnalysisData(resAnalysis?.data || {});
+      setCurrentJobData(resJob?.data || {});
+      setIsReportModalOpen(true);
+      
+      toast.success("APIs called successfully, check network tab");
+    } catch (error) {
+      toast.error("Failed to fetch report data");
+      console.error(error);
+    }
+  };
 
   useEffect(() => { setPage(1) }, [search])
 
@@ -733,7 +762,7 @@ const CandidateByJob = () => {
                   <td className="px-4 py-3 text-center">
                     {candidate.analysis ? (
                       <button
-                        onClick={() => window.open(`${baseUrl}${candidate.analysis}`, "_blank")}
+                        onClick={() => handleViewReport(candidate)}
                         className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#800080] text-white hover:bg-[#6a006a] transition-colors duration-150 whitespace-nowrap shadow-sm"
                       >
                         View Report
@@ -824,6 +853,13 @@ const CandidateByJob = () => {
         open={codingModalOpen}
         setOpen={setCodingModalOpen}
         codingData={codingData}
+      />
+
+      <ReportPdfModal
+        open={isReportModalOpen}
+        setOpen={setIsReportModalOpen}
+        analysisData={currentAnalysisData}
+        jobData={currentJobData}
       />
     </div>
   )

@@ -8,6 +8,7 @@ import QuestionSlice from "../app/Reducer/QuestionSlice"
 import DashboardSlice from "../app/Reducer/DashboardSlice"
 import ProfileSlice from "../app/Reducer/ProfileSlice"
 import InterviewResultSlice from "../app/Reducer/InterviewResultSlice"
+import DownloadReportPdfSlice from "../app/Reducer/DownloadReportPdfSlice"
 
 const store=configureStore({
     reducer:{
@@ -18,7 +19,8 @@ const store=configureStore({
         questions:QuestionSlice,
         dashboard:DashboardSlice,
         profile:ProfileSlice,
-        interviewResult: InterviewResultSlice
+        interviewResult: InterviewResultSlice,
+        downloadReportPdf: DownloadReportPdfSlice
     }
 })
 export default store;
