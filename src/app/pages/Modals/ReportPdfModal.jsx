@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Dialog, DialogContent } from "../../components/ui/Dialog";
 import { Mail, Phone, Calendar, Download, ChevronDown } from "lucide-react";
 
-export default function ReportPdfModal({ open, setOpen, analysisData, jobData }) {
+export default function ReportPdfModal({ open, setOpen, analysisData, jobData, codingAnswersData, codingData, finalResultData }) {
   const contentRef = useRef(null);
 
   const handlePrint = () => {
@@ -15,9 +15,12 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
   let parsedAnalysis = {};
   try {
     if (analysisData?.analysis) {
-      parsedAnalysis = typeof analysisData.analysis === 'string' 
+      const tempParsed = typeof analysisData.analysis === 'string' 
         ? JSON.parse(analysisData.analysis) 
         : analysisData.analysis;
+        
+      // Extract the nested 'analysis' object if it exists (handles nested JSON structure)
+      parsedAnalysis = tempParsed?.analysis ? tempParsed.analysis : tempParsed;
     }
   } catch(e) {
     console.error("Failed to parse analysis JSON", e);
@@ -32,7 +35,9 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
   const interviewLink = analysisData?.interviewLink || "";
   const videoLink = analysisData?.videoLink || "";
   const transcriptLink = analysisData?.transcriptionLink || "";
-  const score = parsedAnalysis.overall_score || analysisData?.score || 0;
+  
+  // Use finalResultData score if available, fallback to parsed analysis score
+  const score = finalResultData?.final_interview?.score ?? (parsedAnalysis.overall_score || analysisData?.score || 0);
   
   const categoryScores = parsedAnalysis.category_scores || {
     technical_area: 0,
@@ -51,11 +56,14 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
   let codingQuestions = [];
   let codingAnswers = [];
   try {
-    if (analysisData?.codingDTO?.questionData) {
-      const parsedQuestionData = JSON.parse(analysisData.codingDTO.questionData);
+    const rawQuestionData = codingData || analysisData?.codingDTO?.questionData;
+    if (rawQuestionData) {
+      const parsedQuestionData = typeof rawQuestionData === 'string' ? JSON.parse(rawQuestionData) : rawQuestionData;
       codingQuestions = parsedQuestionData.questions || [];
     }
-    if (analysisData?.codingDTO?.answers) {
+    if (codingAnswersData) {
+      codingAnswers = typeof codingAnswersData === 'string' ? JSON.parse(codingAnswersData) : codingAnswersData;
+    } else if (analysisData?.codingDTO?.answers) {
       codingAnswers = analysisData.codingDTO.answers || [];
     }
   } catch (err) {
@@ -192,10 +200,23 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-500 whitespace-nowrap mr-4">Status</span>
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-bold border border-amber-200 whitespace-nowrap">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                      Pending Score
-                    </span>
+                    {finalResultData?.final_interview?.select_reject ? (
+                      <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border whitespace-nowrap ${
+                        finalResultData.final_interview.select_reject === 'Select' 
+                          ? 'bg-emerald-50 text-emerald-600 border-emerald-200' 
+                          : 'bg-red-50 text-red-600 border-red-200'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          finalResultData.final_interview.select_reject === 'Select' ? 'bg-emerald-500' : 'bg-red-500'
+                        }`}></span>
+                        {finalResultData.final_interview.select_reject}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-bold border border-amber-200 whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        Pending Score
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -207,24 +228,88 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
               <div className="space-y-4">
                 <div className="flex justify-between items-center border-b border-gray-100 pb-4">
                   <span className="text-sm text-gray-500 whitespace-nowrap mr-4">Interview Link</span>
-                  <a href={interviewLink} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline truncate max-w-[400px] text-right">
+                  <a href={interviewLink} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
                     {interviewLink || "Not Available"}
                   </a>
                 </div>
                 <div className="flex justify-between items-center border-b border-gray-100 pb-4">
                   <span className="text-sm text-gray-500 whitespace-nowrap mr-4">Video Recording</span>
-                  <a href={videoLink ? `${import.meta.env.VITE_MAIN_API_URL}${videoLink}` : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline truncate max-w-[400px] text-right">
+                  <a href={videoLink ? `${import.meta.env.VITE_MAIN_API_URL}${videoLink}` : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
                     {videoLink ? `${import.meta.env.VITE_MAIN_API_URL}${videoLink}` : "Not Available"}
                   </a>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-500 whitespace-nowrap mr-4">Transcript</span>
-                  <a href={transcriptLink ? `${import.meta.env.VITE_MAIN_API_URL}${transcriptLink}` : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline truncate max-w-[400px] text-right">
+                  <a href={transcriptLink ? `${import.meta.env.VITE_MAIN_API_URL}${transcriptLink}` : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
                     {transcriptLink ? `${import.meta.env.VITE_MAIN_API_URL}${transcriptLink}` : "Not Available"}
                   </a>
                 </div>
               </div>
             </div>
+
+            {/* FINAL ASSESSMENT SUMMARY */}
+            {finalResultData && (
+              <div className="mb-6 bg-white rounded-2xl p-6 shadow-md border border-gray-300 print:break-inside-avoid print:shadow-none print:border-gray-400 shrink-0">
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-xs font-bold text-gray-800 uppercase tracking-widest">Round-by-Round Breakdown</h3>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                    finalResultData.final_interview?.select_reject === 'Select' 
+                      ? 'bg-emerald-100 text-emerald-700 border-emerald-200' 
+                      : 'bg-red-100 text-red-700 border-red-200'
+                  } border`}>
+                    Final Status: {finalResultData.final_interview?.select_reject || 'Pending'}
+                  </span>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* AI Interview */}
+                    <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">AI Interview</span>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${
+                            finalResultData.ai_interview?.select_reject === 'Select' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'
+                          }`}>
+                            {finalResultData.ai_interview?.select_reject || 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className="text-xs text-gray-400 font-medium uppercase">Score</span>
+                          <span className="text-lg font-bold text-gray-900">{finalResultData.ai_interview?.score || 0}<span className="text-sm text-gray-400">/100</span></span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-2 leading-relaxed whitespace-pre-wrap">
+                        {finalResultData.ai_interview?.reason}
+                      </p>
+                    </div>
+
+                    {/* Coding Interview */}
+                    {finalResultData.coding_round_available && (
+                      <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Coding Interview</span>
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${
+                              finalResultData.coding_interview?.select_reject === 'Select' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'
+                            }`}>
+                              {finalResultData.coding_interview?.select_reject || 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="text-xs text-gray-400 font-medium uppercase">Score</span>
+                            <span className="text-lg font-bold text-gray-900">{finalResultData.coding_interview?.score || 0}<span className="text-sm text-gray-400">/100</span></span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-2 leading-relaxed whitespace-pre-wrap">
+                          {finalResultData.coding_interview?.reason}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* OVERALL AI SUMMARY */}
             {overallAiSummary && (
@@ -434,9 +519,31 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
                   {codingQuestions.map((q, idx) => {
                     const answer = codingAnswers[idx];
                     let answerText = "No answer submitted";
+                    let timeData = null;
+                    let evaluation = null;
+                    
                     if (answer) {
-                       answerText = typeof answer === 'string' ? answer : (answer.code || answer.answer || JSON.stringify(answer, null, 2));
+                       let parsedAnswer = answer;
+                       if (typeof answer === 'string') {
+                         try { parsedAnswer = JSON.parse(answer); } catch(e) {}
+                       }
+                       
+                       // Try to parse array string if it's deeply nested (like API response)
+                       if (typeof parsedAnswer === 'string') {
+                         try { parsedAnswer = JSON.parse(parsedAnswer); } catch(e) {}
+                       }
+                       
+                       if (Array.isArray(parsedAnswer)) parsedAnswer = parsedAnswer[idx] || parsedAnswer[0];
+
+                       if (parsedAnswer && parsedAnswer.candidateAnswer && parsedAnswer.candidateAnswer.submittedCode) {
+                         answerText = parsedAnswer.candidateAnswer.submittedCode;
+                         timeData = parsedAnswer.timeData;
+                         evaluation = parsedAnswer.evaluation;
+                       } else if (parsedAnswer) {
+                         answerText = typeof parsedAnswer === 'string' ? parsedAnswer : (parsedAnswer.code || parsedAnswer.answer || JSON.stringify(parsedAnswer, null, 2));
+                       }
                     }
+                    
                     return (
                       <div key={idx} className="bg-[#1e1e2e] border border-gray-800 rounded-xl overflow-hidden print:bg-white print:border-gray-200 print:shadow-none print:break-inside-avoid">
                         <div className="bg-gray-800 px-4 py-2 flex items-center justify-between print:bg-gray-100 print:border-b print:border-gray-200">
@@ -445,7 +552,21 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData })
                             <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
                             <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
                           </div>
-                          <span className="text-xs text-gray-400 font-mono print:text-gray-600">{q.language || 'Code'}</span>
+                          <div className="flex items-center gap-4">
+                            {timeData && (
+                              <span className="text-[10px] text-gray-400 font-mono print:text-gray-500">
+                                Submitted: {timeData.submittedAt}
+                              </span>
+                            )}
+                            {evaluation && (
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                evaluation.status === 'PASSED' ? 'bg-emerald-500/20 text-emerald-400 print:bg-emerald-100 print:text-emerald-700' : 'bg-red-500/20 text-red-400 print:bg-red-100 print:text-red-700'
+                              }`}>
+                                {evaluation.status} ({evaluation.testCasesPassed} tests)
+                              </span>
+                            )}
+                            <span className="text-xs text-gray-400 font-mono print:text-gray-600">{q.language || 'Code'}</span>
+                          </div>
                         </div>
                         <div className="p-6 text-left">
                           <h4 className="text-white font-bold mb-2 print:text-black text-lg">{idx + 1}. {q.title}</h4>

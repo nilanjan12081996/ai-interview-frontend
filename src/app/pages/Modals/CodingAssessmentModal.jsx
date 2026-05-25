@@ -5,7 +5,7 @@ import { Badge } from "../../components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { Code, Lightbulb, ClipboardList, Timer, Cpu, BookOpen, AlertCircle } from "lucide-react";
 
-const CodingAssessmentModal = ({ open, setOpen, codingData }) => {
+const CodingAssessmentModal = ({ open, setOpen, codingData, codingAnswersData }) => {
   if (!codingData) return null;
 
   let data = {};
@@ -14,6 +14,20 @@ const CodingAssessmentModal = ({ open, setOpen, codingData }) => {
   } catch (e) {
     console.error("Failed to parse coding data", e);
     return null;
+  }
+
+  let answers = [];
+  try {
+    if (codingAnswersData) {
+      answers = typeof codingAnswersData === 'string' ? JSON.parse(codingAnswersData) : codingAnswersData;
+      if (!Array.isArray(answers)) {
+         if (answers.answers) answers = answers.answers;
+         else if (answers.data) answers = answers.data; // Just in case it's nested
+         else answers = [answers];
+      }
+    }
+  } catch (e) {
+    console.error("Failed to parse coding answers", e);
   }
 
   const questions = data.questions || [];
@@ -151,8 +165,50 @@ const CodingAssessmentModal = ({ open, setOpen, codingData }) => {
                         </div>
                       </section>
 
+                      {/* Candidate's Solution Section */}
+                      <section className="bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-slate-800 mt-6">
+                        <div className="bg-slate-800 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="flex items-center gap-3">
+                            <Code className="w-4 h-4 text-emerald-400" />
+                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.15em]">Candidate's Solution</span>
+                          </div>
+                          
+                          {answers[idx] && answers[idx].timeData && (
+                            <div className="flex flex-wrap items-center gap-3">
+                              <span className="text-[10px] text-slate-400 font-medium">
+                                Submitted: {answers[idx].timeData.submittedAt}
+                              </span>
+                              {answers[idx].evaluation && (
+                                <>
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                                    answers[idx].evaluation.status === 'PASSED' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'
+                                  }`}>
+                                    {answers[idx].evaluation.status}
+                                  </span>
+                                  <span className="text-[10px] text-slate-300 bg-slate-700/50 px-2 py-0.5 rounded-full border border-slate-600">
+                                    Tests: {answers[idx].evaluation.testCasesPassed}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-8 overflow-x-auto bg-[#1e1e1e]">
+                          <pre className="text-xs font-mono text-slate-300 leading-loose">
+                            {(() => {
+                              const answer = answers[idx];
+                              if (!answer) return "No answer submitted";
+                              if (answer.candidateAnswer && answer.candidateAnswer.submittedCode) {
+                                return answer.candidateAnswer.submittedCode;
+                              }
+                              return typeof answer === 'string' ? answer : (answer.code || answer.answer || JSON.stringify(answer, null, 2));
+                            })()}
+                          </pre>
+                        </div>
+                      </section>
+
                       {q.hints && q.hints.length > 0 && (
-                        <section className="bg-amber-50/40 p-6 rounded-[2.5rem] border border-amber-100/50 shadow-sm relative overflow-hidden">
+                        <section className="bg-amber-50/40 p-6 rounded-[2.5rem] border border-amber-100/50 shadow-sm relative overflow-hidden mt-6">
                           <div className="absolute top-0 right-0 p-4 opacity-10">
                             <Lightbulb size={60} className="text-amber-500" />
                           </div>

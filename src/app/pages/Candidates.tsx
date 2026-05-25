@@ -444,6 +444,7 @@ export function Candidates() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false)
   const [currentAnalysisData, setCurrentAnalysisData] = useState(null)
   const [currentJobData, setCurrentJobData] = useState(null)
+  const [reportCodingAnswersData, setReportCodingAnswersData] = useState(null)
 
   // Resend modal states
   const [resendModalOpen, setResendModalOpen] = useState(false)
@@ -452,6 +453,8 @@ export function Candidates() {
   // Coding modal states
   const [codingModalOpen, setCodingModalOpen] = useState(false)
   const [codingData, setCodingData] = useState(null)
+  const [codingAnswersData, setCodingAnswersData] = useState(null)
+  const [reportFinalResultData, setReportFinalResultData] = useState(null)
 
   const baseUrl = import.meta.env.VITE_MAIN_API_URL || "https://api.interviewfold.com"
   const dispatch = useDispatch()
@@ -463,17 +466,46 @@ export function Candidates() {
       const token = candidate.interviewLink.split('/').pop();
       const jobId = candidate.jobId || candidate.job_id;
       
+      if (candidate.codingDTO?.questionData) {
+        setCodingData(candidate.codingDTO.questionData);
+      } else {
+        setCodingData(null);
+      }
+      
       const resAnalysis = await dispatch(getDownloadReportPdf({ token })).unwrap();
       const resJob = await dispatch(getSingleJob({ id: jobId })).unwrap();
+      
+      let codingAns = null;
+      try {
+        const ansRes = await axios.get(`${baseUrl}/api/aiinterview/coding/ans/code/${token}`);
+        if (ansRes.data && ansRes.data.ans) {
+          codingAns = ansRes.data.ans.ans;
+        }
+      } catch (e) {
+        console.error("Failed to fetch coding answers for report", e);
+      }
+      
+      let finalResult = null;
+      try {
+        const pythonBaseUrl = import.meta.env.VITE_PYTHON_API_URL || 'https://aiinterviewpythonmain.bestworks.cloud';
+        const finalRes = await axios.get(`${pythonBaseUrl}/api/v1/interview/final-result?token=${token}&interview_link=${encodeURIComponent(candidate.interviewLink)}`);
+        if (finalRes.data && finalRes.data.success) {
+          finalResult = finalRes.data;
+        }
+      } catch (e) {
+        console.error("Failed to fetch final result for report", e);
+      }
       
       console.log("Analysis Data:", resAnalysis);
       console.log("Job Data:", resJob);
       
+      setReportCodingAnswersData(codingAns);
+      setReportFinalResultData(finalResult);
       setCurrentAnalysisData(resAnalysis?.data || {});
       setCurrentJobData(resJob?.data || {});
       setIsReportModalOpen(true);
       
-      toast.success("APIs called successfully, check network tab");
+      // toast.success("APIs called successfully, check network tab");
     } catch (error) {
       toast.error("Failed to fetch report data");
       console.error(error);
@@ -508,9 +540,27 @@ export function Candidates() {
     setResendModalOpen(true)
   }
 
-  const handleOpenCodingModal = (candidate) => {
+  const handleOpenCodingModal = async (candidate) => {
     if (candidate.codingDTO?.questionData) {
       setCodingData(candidate.codingDTO.questionData)
+      
+      try {
+        const token = candidate.interviewLink.split('/').pop();
+        console.log("Opening Coding Modal, Token:", token);
+        const url = `${baseUrl}/api/aiinterview/coding/ans/code/${token}`;
+        console.log("Fetching API:", url);
+        const res = await axios.get(url);
+        console.log("Coding API Response:", res.data);
+        if (res.data && res.data.ans) {
+          setCodingAnswersData(res.data.ans.ans);
+        } else {
+          setCodingAnswersData(null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch coding answers:", err);
+        setCodingAnswersData(null);
+      }
+      
       setCodingModalOpen(true)
     } else {
       toast.info("No coding assessment data available for this candidate.")
@@ -818,6 +868,7 @@ export function Candidates() {
         open={codingModalOpen}
         setOpen={setCodingModalOpen}
         codingData={codingData}
+        codingAnswersData={codingAnswersData}
       />
 
       <ReportPdfModal
@@ -825,6 +876,9 @@ export function Candidates() {
         setOpen={setIsReportModalOpen}
         analysisData={currentAnalysisData}
         jobData={currentJobData}
+        codingAnswersData={reportCodingAnswersData}
+        codingData={codingData}
+        finalResultData={reportFinalResultData}
       />
     </div>
   )
