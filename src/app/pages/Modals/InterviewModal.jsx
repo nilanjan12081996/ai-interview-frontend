@@ -9,6 +9,8 @@ import { toast } from "react-toastify";
 import { useState } from "react";
 import { HiUpload, HiDocumentText } from "react-icons/hi";
 import { getCandidateByJob } from "../../Reducer/JobSlice";
+import { Loader2 } from "lucide-react";
+
 const InterviewModal = ({
   inviteModalOpen,
   setInviteModalOpen,
@@ -85,15 +87,17 @@ const InterviewModal = ({
 
       <Dialog open={inviteModalOpen} onOpenChange={(open) => !isProcessing && setInviteModalOpen(open)}>
         <DialogContent className="sm:max-w-[500px] bg-white max-h-[90vh] p-0 overflow-hidden flex flex-col fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          
+          {isProcessing && (
+            <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-white/90 backdrop-blur-md rounded-lg">
+              <Loader2 className="w-12 h-12 text-[#800080] animate-spin mb-4" />
+              <p className="text-sm font-bold text-[#800080] px-8 text-center animate-pulse">
+                {statusMessage}
+              </p>
+            </div>
+          )}
+
           <div className="relative flex-1 overflow-y-auto p-6 scroll-smooth">
-            {isProcessing && (
-              <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-lg">
-                <div className="w-12 h-12 border-4 border-[#800080] border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-sm font-bold text-[#800080] px-8 text-center animate-pulse">
-                  {statusMessage}
-                </p>
-              </div>
-            )}
             <DialogHeader>
               <DialogTitle>Schedule New Interview</DialogTitle>
               <DialogDescription>

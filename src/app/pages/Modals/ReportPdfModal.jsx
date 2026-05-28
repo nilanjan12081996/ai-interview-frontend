@@ -1,13 +1,16 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Dialog, DialogContent } from "../../components/ui/Dialog";
 import { Mail, Phone, Calendar, Download, ChevronDown } from "lucide-react";
 
 export default function ReportPdfModal({ open, setOpen, analysisData, jobData, codingAnswersData, codingData, finalResultData }) {
   const contentRef = useRef(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handlePrint = () => {
     window.print();
   };
+
+
 
   if (!open) return null;
 
@@ -94,6 +97,12 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
             [role="dialog"], [role="dialog"] * {
               visibility: visible;
             }
+            /* Hide the Radix UI auto-generated close (X) button.
+               The button has no aria-label; target it by its absolute positioning class. */
+            [role="dialog"] button.absolute {
+              display: none !important;
+              visibility: hidden !important;
+            }
             [role="dialog"] {
               position: absolute !important;
               left: 0 !important;
@@ -108,6 +117,23 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
               background: white !important;
               box-shadow: none !important;
             }
+            /* Preserve dark coding backgrounds */
+            .coding-block {
+              background-color: #1e1e2e !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .coding-header {
+              background-color: #2d2d3f !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .coding-pre {
+              background-color: #000000 !important;
+              color: #d1d5db !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
           }
         `}</style>
 
@@ -118,9 +144,9 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
             <button onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
               Close
             </button>
-            <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#800080] hover:bg-[#660066] rounded-lg shadow-sm transition-colors">
+            <button onClick={handlePrint} disabled={isDownloading} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#800080] hover:bg-[#660066] rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               <Download className="w-4 h-4" />
-              Download PDF
+              {isDownloading ? 'Generating...' : 'Download PDF'}
             </button>
           </div>
         </div>
@@ -129,7 +155,7 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
         <div className="flex-1 overflow-auto flex justify-center py-8 bg-gray-200 print:py-0 print:bg-white print:block print:overflow-visible hide-scrollbar">
           
           {/* THE "A4" PAGE - Using h-max and flex-col to perfectly wrap any number of skills */}
-          <div ref={contentRef} className="bg-white w-[800px] min-h-[1123px] h-max shadow-2xl p-10 flex flex-col print:shadow-none print:w-full print:max-w-none print:h-auto print:m-0 print:p-0 print:break-after-auto mx-auto shrink-0">
+          <div id="pdf-content-wrapper" ref={contentRef} className="bg-white w-[800px] min-h-[1123px] h-max shadow-2xl p-10 flex flex-col print:shadow-none print:w-full print:max-w-none print:h-auto print:min-h-0 print:m-0 print:p-0 print:break-after-auto mx-auto shrink-0">
             
             {/* HEADER CARD */}
             <div className="mb-6 relative rounded-2xl overflow-hidden shadow-sm text-white print:break-inside-avoid print:shadow-none shrink-0" style={{ backgroundColor: '#800080' }}>
@@ -234,55 +260,66 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
                 </div>
                 <div className="flex justify-between items-center border-b border-gray-100 pb-4">
                   <span className="text-sm text-gray-500 whitespace-nowrap mr-4">Video Recording</span>
-                  <a href={videoLink ? `${import.meta.env.VITE_MAIN_API_URL}${videoLink}` : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
-                    {videoLink ? `${import.meta.env.VITE_MAIN_API_URL}${videoLink}` : "Not Available"}
+                  <a href={videoLink ? (videoLink.startsWith('http') ? videoLink : `${import.meta.env.VITE_MAIN_API_URL}${videoLink}`) : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
+                    {videoLink ? (videoLink.startsWith('http') ? videoLink : `${import.meta.env.VITE_MAIN_API_URL}${videoLink}`) : "Not Available"}
                   </a>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-500 whitespace-nowrap mr-4">Transcript</span>
-                  <a href={transcriptLink ? `${import.meta.env.VITE_MAIN_API_URL}${transcriptLink}` : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
-                    {transcriptLink ? `${import.meta.env.VITE_MAIN_API_URL}${transcriptLink}` : "Not Available"}
+                  <a href={transcriptLink ? (transcriptLink.startsWith('http') ? transcriptLink : `${import.meta.env.VITE_MAIN_API_URL}${transcriptLink}`) : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
+                    {transcriptLink ? (transcriptLink.startsWith('http') ? transcriptLink : `${import.meta.env.VITE_MAIN_API_URL}${transcriptLink}`) : "Not Available"}
                   </a>
                 </div>
               </div>
             </div>
 
             {/* FINAL ASSESSMENT SUMMARY */}
-            {finalResultData && (
-              <div className="mb-6 bg-white rounded-2xl p-6 shadow-md border border-gray-300 print:break-inside-avoid print:shadow-none print:border-gray-400 shrink-0">
-                <div className="flex items-center justify-between mb-5">
-                  <h3 className="text-xs font-bold text-gray-800 uppercase tracking-widest">Round-by-Round Breakdown</h3>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                    finalResultData.final_interview?.select_reject === 'Select' 
-                      ? 'bg-emerald-100 text-emerald-700 border-emerald-200' 
-                      : 'bg-red-100 text-red-700 border-red-200'
-                  } border`}>
-                    Final Status: {finalResultData.final_interview?.select_reject || 'Pending'}
-                  </span>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* AI Interview */}
-                    <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">AI Interview</span>
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${
-                            finalResultData.ai_interview?.select_reject === 'Select' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'
-                          }`}>
-                            {finalResultData.ai_interview?.select_reject || 'N/A'}
-                          </span>
+            {finalResultData && (() => {
+              const hasAI = !!finalResultData.ai_interview;
+              const hasCoding = !!finalResultData.coding_round_available;
+              const numRounds = (hasAI ? 1 : 0) + (hasCoding ? 1 : 0);
+
+              if (numRounds === 0) return null;
+
+              return (
+                <div className="mb-6 bg-white rounded-2xl p-6 shadow-md border border-gray-300 print:break-inside-avoid print:shadow-none print:border-gray-400 shrink-0">
+                  <div className="flex items-center justify-between mb-5">
+                    <h3 className="text-xs font-bold text-gray-800 uppercase tracking-widest">
+                      {numRounds === 1 ? "ROUND" : "Round-by-Round Breakdown"}
+                    </h3>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                      finalResultData.final_interview?.select_reject === 'Select' 
+                        ? 'bg-emerald-100 text-emerald-700 border-emerald-200' 
+                        : 'bg-red-100 text-red-700 border-red-200'
+                    } border`}>
+                      Final Status: {finalResultData.final_interview?.select_reject || 'Pending'}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className={`grid grid-cols-1 ${numRounds === 1 ? '' : 'md:grid-cols-2'} gap-4`}>
+                      {/* AI Interview */}
+                      {hasAI && (
+                        <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex flex-col">
+                              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">AI Interview</span>
+                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${
+                                finalResultData.ai_interview?.select_reject === 'Select' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'
+                              }`}>
+                                {finalResultData.ai_interview?.select_reject || 'N/A'}
+                              </span>
+                            </div>
+                            <div className="flex flex-col items-end">
+                              <span className="text-xs text-gray-400 font-medium uppercase">Score</span>
+                              <span className="text-lg font-bold text-gray-900">{finalResultData.ai_interview?.score || 0}<span className="text-sm text-gray-400">/100</span></span>
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-600 mt-2 leading-relaxed whitespace-pre-wrap">
+                            {finalResultData.ai_interview?.reason}
+                          </p>
                         </div>
-                        <div className="flex flex-col items-end">
-                          <span className="text-xs text-gray-400 font-medium uppercase">Score</span>
-                          <span className="text-lg font-bold text-gray-900">{finalResultData.ai_interview?.score || 0}<span className="text-sm text-gray-400">/100</span></span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-600 mt-2 leading-relaxed whitespace-pre-wrap">
-                        {finalResultData.ai_interview?.reason}
-                      </p>
-                    </div>
+                      )}
 
                     {/* Coding Interview */}
                     {finalResultData.coding_round_available && (
@@ -309,7 +346,8 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
                   </div>
                 </div>
               </div>
-            )}
+            );
+            })()}
 
             {/* OVERALL AI SUMMARY */}
             {overallAiSummary && (
@@ -358,27 +396,41 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
               
               <div className="space-y-4">
                 {mustToHaveSkills.map((skill, idx) => {
-                  const colors = [
-                    { bg: "bg-emerald-500", border: "border-l-emerald-500", text: "text-emerald-600" },
-                    { bg: "bg-amber-500", border: "border-l-amber-500", text: "text-amber-600" },
-                    { bg: "bg-[#800080]", border: "border-l-[#800080]", text: "text-[#800080]" },
-                    { bg: "bg-red-500", border: "border-l-red-500", text: "text-red-600" },
+                  const borderColors = [
+                    '#10b981', // emerald
+                    '#f59e0b', // amber
+                    '#800080', // purple
+                    '#ef4444', // red
                   ];
-                  const c = colors[idx % colors.length];
+                  const textColors = [
+                    'text-emerald-600',
+                    'text-amber-600',
+                    'text-[#800080]',
+                    'text-red-600',
+                  ];
+                  const bgColors = [
+                    'bg-emerald-500',
+                    'bg-amber-500',
+                    'bg-[#800080]',
+                    'bg-red-500',
+                  ];
+                  const borderColor = borderColors[idx % borderColors.length];
+                  const textColor = textColors[idx % textColors.length];
+                  const bgColor = bgColors[idx % bgColors.length];
                   const skillScore = skill.percentage || 0;
                   const level = skillScore >= 80 ? "Expert" : skillScore >= 60 ? "Intermediate" : "Beginner";
 
                   return (
-                    <div key={idx} className={`bg-white rounded-xl p-5 shadow-md border border-gray-300 border-l-4 print:shadow-none print:border-gray-400 ${c.border}`}>
+                    <div key={idx} className="bg-white rounded-xl p-5 shadow-md border border-gray-200 print:shadow-none print:break-inside-avoid" style={{ borderLeft: `4px solid ${borderColor}` }}>
                       <div className="flex justify-between items-center mb-3">
                         <h4 className="font-bold text-gray-900 capitalize truncate pr-4">{skill.skill_name}</h4>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <span className="text-xs text-gray-500 italic font-medium">{level}</span>
-                          <span className={`text-sm font-bold ${c.text}`}>{skillScore}/100</span>
+                          <span className={`text-sm font-bold ${textColor}`}>{skillScore}/100</span>
                         </div>
                       </div>
                       <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mb-3">
-                        <div className={`h-full ${c.bg}`} style={{ width: `${skillScore}%` }}></div>
+                        <div className={`h-full ${bgColor}`} style={{ width: `${skillScore}%` }}></div>
                       </div>
                       {skill.description && (
                         <p className="text-sm text-gray-600 mt-2 leading-relaxed">{skill.description}</p>
@@ -448,11 +500,11 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
             </div>
 
             {/* INTERVIEW QUESTIONS & RESPONSES */}
-            <div className="mb-6 print:break-inside-avoid shrink-0 pt-4">
-              <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                Interview Questions & Responses <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider">{interviewQuestionsResponses.length} QUESTIONS</span>
-              </h3>
-              {interviewQuestionsResponses.length > 0 ? (
+            {interviewQuestionsResponses.length > 0 && (
+              <div className="mb-6 print:break-inside-avoid shrink-0 pt-4">
+                <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  Interview Questions & Responses <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider">{interviewQuestionsResponses.length} QUESTIONS</span>
+                </h3>
                 <div className="space-y-6">
                   {interviewQuestionsResponses.map((qr, idx) => (
                     <div key={idx} className="bg-white rounded-xl p-6 shadow-md border border-gray-300 print:shadow-none print:border-gray-400 print:break-inside-avoid">
@@ -499,22 +551,17 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="bg-gray-50 border border-gray-300 rounded-xl p-10 flex flex-col items-center justify-center text-center border-dashed shadow-sm">
-                  <p className="text-sm font-bold text-gray-600">No questions found</p>
-                  <p className="text-xs text-gray-500 mt-1 font-medium">Detailed Q&A transcript data is currently unavailable for this session.</p>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* CODING ROUND */}
-            <div className="mb-6 print:break-inside-avoid shrink-0 pt-4 pb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <h3 className="text-sm font-bold text-gray-900">Coding Round</h3>
-                <span className="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider">LIVE ASSESSMENT</span>
-              </div>
-              
-              {codingQuestions.length > 0 ? (
+            {codingQuestions.length > 0 && (
+              <div className="mb-6 print:break-inside-avoid shrink-0 pt-4 pb-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <h3 className="text-sm font-bold text-gray-900">Coding Round</h3>
+                  <span className="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider">LIVE ASSESSMENT</span>
+                </div>
+                
                 <div className="space-y-6">
                   {codingQuestions.map((q, idx) => {
                     const answer = codingAnswers[idx];
@@ -545,63 +592,49 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
                     }
                     
                     return (
-                      <div key={idx} className="bg-[#1e1e2e] border border-gray-800 rounded-xl overflow-hidden print:bg-white print:border-gray-200 print:shadow-none print:break-inside-avoid">
-                        <div className="bg-gray-800 px-4 py-2 flex items-center justify-between print:bg-gray-100 print:border-b print:border-gray-200">
-                          <div className="flex gap-1.5 print:hidden">
-                            <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
-                            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
-                            <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            {timeData && (
-                              <span className="text-[10px] text-gray-400 font-mono print:text-gray-500">
-                                Submitted: {timeData.submittedAt}
-                              </span>
-                            )}
-                            {evaluation && (
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                                evaluation.status === 'PASSED' ? 'bg-emerald-500/20 text-emerald-400 print:bg-emerald-100 print:text-emerald-700' : 'bg-red-500/20 text-red-400 print:bg-red-100 print:text-red-700'
-                              }`}>
-                                {evaluation.status} ({evaluation.testCasesPassed} tests)
-                              </span>
-                            )}
-                            <span className="text-xs text-gray-400 font-mono print:text-gray-600">{q.language || 'Code'}</span>
-                          </div>
-                        </div>
-                        <div className="p-6 text-left">
-                          <h4 className="text-white font-bold mb-2 print:text-black text-lg">{idx + 1}. {q.title}</h4>
-                          <div className="text-sm text-gray-400 mb-6 print:text-gray-600 whitespace-pre-wrap">{q.problemStatement}</div>
-                          
-                          <div className="mt-4">
-                            <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 print:text-gray-500">Candidate's Solution</h5>
-                            <pre className="bg-black/50 p-4 rounded-lg overflow-x-auto text-sm font-mono text-gray-300 print:bg-gray-50 print:text-black print:border print:border-gray-200 whitespace-pre-wrap">
-                              <code>{answerText}</code>
-                            </pre>
-                          </div>
-                        </div>
-                      </div>
+                       <div key={idx} className="coding-block border border-gray-800 rounded-xl overflow-hidden print:break-inside-avoid" style={{ backgroundColor: '#1e1e2e' }}>
+                         <div className="coding-header px-4 py-2 flex items-center justify-between" style={{ backgroundColor: '#2d2d3f' }}>
+                           <div className="flex gap-1.5">
+                              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#ef4444' }}></div>
+                              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#eab308' }}></div>
+                              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#22c55e' }}></div>
+                            </div>
+                           <div className="flex items-center gap-4">
+                             {timeData && (
+                               <span className="text-[10px] text-gray-400 font-mono">
+                                 Submitted: {timeData.submittedAt}
+                               </span>
+                             )}
+                             {evaluation && (
+                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                 evaluation.status === 'PASSED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                               }`}>
+                                 {evaluation.status} ({evaluation.testCasesPassed} tests)
+                               </span>
+                             )}
+                             <span className="text-xs text-gray-400 font-mono">{q.language || 'Code'}</span>
+                           </div>
+                         </div>
+                         <div className="p-6 text-left">
+                           <h4 className="text-white font-bold mb-2 text-lg">{idx + 1}. {q.title}</h4>
+                           <div className="text-sm text-gray-400 mb-6 whitespace-pre-wrap">{q.problemStatement}</div>
+                           
+                           <div className="mt-4">
+                             <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Candidate's Solution</h5>
+                             <pre className="coding-pre p-4 rounded-lg overflow-x-auto text-sm font-mono text-gray-300 whitespace-pre-wrap" style={{ backgroundColor: '#000000' }}>
+                               <code>{answerText}</code>
+                             </pre>
+                           </div>
+                         </div>
+                       </div>
                     );
                   })}
                 </div>
-              ) : (
-                <div className="bg-[#1e1e2e] border border-gray-800 rounded-xl p-12 text-center shadow-inner relative overflow-hidden print:bg-gray-50 print:border-gray-200 print:shadow-none">
-                  {/* Mac window dots */}
-                  <div className="absolute top-4 left-4 flex gap-1.5 print:hidden">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
-                  </div>
-                  
-                  <div className="flex flex-col items-center justify-center pt-2">
-                    <p className="text-sm font-medium text-gray-400 font-mono print:text-gray-500">No coding assessment found</p>
-                    <p className="text-xs text-gray-500/60 mt-2 font-mono print:text-gray-400">// The candidate did not participate in a coding round.</p>
-                  </div>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* FOOTER - mt-auto pushes it to the absolute bottom of the A4 page */}
-            <div className="mt-auto pt-10 pb-4 text-center text-xs text-gray-400 flex flex-col items-center gap-2 print:pb-4 border-t border-gray-100 shrink-0">
+            {/* FOOTER - mt-8 in print to stay attached to content, not float to a new page */}
+            <div className="mt-auto print:mt-8 pt-6 pb-4 text-center text-xs text-gray-400 flex flex-col items-center gap-2 border-t border-gray-100 shrink-0">
               <p>✦ <span className="font-bold text-[#800080]">InterviewFold</span> — AI-powered hiring intelligence</p>
             </div>
 

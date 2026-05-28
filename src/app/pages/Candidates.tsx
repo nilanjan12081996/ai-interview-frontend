@@ -50,7 +50,7 @@ const CostCell = ({ interviewLink }) => {
 };
 
 // ─── Result Cell Component ────────────────────────────────────────────────────
-const ResultCell = ({ interviewLink, round }) => {
+const ResultCell = ({ interviewLink, round, isCoding, candidate }) => {
   const dispatch = useDispatch();
   const results = useSelector(state => state.interviewResult?.results || {});
   const resultData = results[interviewLink];
@@ -62,7 +62,16 @@ const ResultCell = ({ interviewLink, round }) => {
     }
   }, [interviewLink, resultData, dispatch]);
 
-  if (!resultData) return <StatusPill status="Pending" />;
+  const renderDash = () => <div className="text-gray-400 font-bold text-center">-</div>;
+
+  if (!resultData) {
+    if (round === 'coding_interview') {
+      if (isCoding === 0 || isCoding === false || isCoding === "0" || isCoding === "false") {
+        return renderDash();
+      }
+    }
+    return <StatusPill status="Pending" />;
+  }
 
   const roundData = resultData[round];
   
@@ -76,6 +85,12 @@ const ResultCell = ({ interviewLink, round }) => {
       } else {
         status = "Rejected";
       }
+    }
+  }
+
+  if (status === "Pending" && round === 'coding_interview') {
+    if (resultData.coding_round_available === false || isCoding === 0 || isCoding === false || isCoding === "0" || isCoding === "false") {
+      return renderDash();
     }
   }
 
@@ -345,11 +360,19 @@ function StatusPill({ status }) {
     Pending:    { bg: "bg-gray-100",   text: "text-gray-600",    dot: "bg-gray-500"    },
     Selected:   { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500" },
     "Borderline Selected": { bg: "bg-blue-50", text: "text-blue-700", dot: "bg-blue-500" },
+    Generating: { bg: "bg-purple-50", text: "text-purple-700", dot: "bg-purple-500", spin: true },
   }
   const s = map[status] ?? { bg: "bg-gray-100", text: "text-gray-600", dot: "bg-gray-400" }
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${s.bg} ${s.text}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+      {s.spin ? (
+        <svg className="animate-spin w-3 h-3 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      ) : (
+        <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+      )}
       {status}
     </span>
   )
@@ -576,10 +599,15 @@ export function Candidates() {
 
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
+  const user_type = sessionStorage.getItem("role")
+  const isRecruiter = user_type !== "SUPER_ADMIN"
+
   const HEADERS = [
     "Candidate", "Email", "Phone", "Added By", "Recruiter Email", "Resume",
     "Client Name", "Interview Date", "Timing",
-    "Interview Status", "Ai Interview Result", "Coding Assessment Result", "Final Interview Result", "AI Interview Cost", "Coding Assessment Cost", "Resources", "Report",
+    "Interview Status", "Ai Interview Result", "Coding Assessment Result", "Final Interview Result", 
+    ...(!isRecruiter ? ["AI Interview Cost", "Coding Assessment Cost"] : []),
+    "Resources", "Report",
     "Resend Link", "Actions",
   ]
 
@@ -692,30 +720,33 @@ export function Candidates() {
                     {/* Ai Interview Result */}
                     <td className="px-4 py-3">
                       <div className="flex justify-center">
-                        <ResultCell interviewLink={candidate.interviewLink} round="ai_interview" />
+                        <ResultCell interviewLink={candidate.interviewLink} round="ai_interview" candidate={candidate} />
                       </div>
                     </td>
 
                     {/* Coding Assessment Result */}
                     <td className="px-4 py-3">
                       <div className="flex justify-center">
-                        <ResultCell interviewLink={candidate.interviewLink} round="coding_interview" />
+                        <ResultCell interviewLink={candidate.interviewLink} round="coding_interview" isCoding={candidate.isCoding} candidate={candidate} />
                       </div>
                     </td>
 
                     {/* Final Interview Result */}
                     <td className="px-4 py-3">
                       <div className="flex justify-center">
-                        <ResultCell interviewLink={candidate.interviewLink} round="final_interview" />
+                        <ResultCell interviewLink={candidate.interviewLink} round="final_interview" candidate={candidate} />
                       </div>
                     </td>
 
                     {/* AI Interview Cost */}
+                    {!isRecruiter && (
                     <td className="px-4 py-3 text-center">
                       <CostCell interviewLink={candidate.interviewLink} />
                     </td>
+                    )}
 
                     {/* Coding Assessment Cost */}
+                    {!isRecruiter && (
                     <td className="px-4 py-3 text-center">
                       <span className="font-bold text-emerald-600 text-[11px] tabular-nums">
                         ${(() => {
@@ -735,6 +766,7 @@ export function Candidates() {
                         })()}
                       </span>
                     </td>
+                    )}
 
                     {/* Resources */}
                     <td className="px-4 py-3">
@@ -748,7 +780,8 @@ export function Candidates() {
                           color="text-red-500"
                           disabled={!candidate.videoLink}
                           onClick={() => {
-                            const videoUrl = `${import.meta.env.VITE_MAIN_API_URL}${candidate.videoLink}`
+                            const vl = candidate.videoLink;
+                            const videoUrl = vl.startsWith('http') ? vl : `${import.meta.env.VITE_MAIN_API_URL}${vl}`;
                             window.open(videoUrl, "_blank")
                           }}
                         >
