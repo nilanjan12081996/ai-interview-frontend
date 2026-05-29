@@ -76,6 +76,10 @@ const ResultCell = ({ interviewLink, round, isCoding, candidate }) => {
 
   const roundData = resultData[round];
   
+  if (round === 'ai_interview' && roundData === null) {
+    return renderDash();
+  }
+
   let status = "Pending";
   if (roundData) {
     if (roundData.selected === true) {
@@ -354,6 +358,7 @@ function StatusPill({ status }) {
     Selected:   { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500" },
     "Borderline Selected": { bg: "bg-blue-50", text: "text-blue-700", dot: "bg-blue-500" },
     Generating: { bg: "bg-purple-50", text: "text-purple-700", dot: "bg-purple-500", spin: true },
+    Processing: { bg: "bg-purple-50", text: "text-purple-700", dot: "bg-purple-500" },
   }
   const s = map[status] ?? { bg: "bg-gray-100", text: "text-gray-600", dot: "bg-gray-400" }
   return (
@@ -443,6 +448,7 @@ function Pagination({ total, page, onPage }) {
 const CandidateByJob = () => {
   const baseUrl = import.meta.env.VITE_MAIN_API_URL || "https://api.interviewfold.com"
   const { candidateByJobData } = useSelector((state) => state?.jobs)
+  const interviewResults = useSelector(state => state.interviewResult?.results || {})
   
   // Modals state
   const [inviteModalOpen, setInviteModalOpen] = useState(false)
@@ -474,6 +480,18 @@ const CandidateByJob = () => {
   // UI state
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
+
+  const tableContainerRef = useRef(null)
+
+  const scrollTable = (direction) => {
+    if (tableContainerRef.current) {
+      const scrollAmount = 400
+      tableContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      })
+    }
+  }
 
   const location = useLocation()
   const id = location?.state?.id // Job ID
@@ -622,7 +640,23 @@ const CandidateByJob = () => {
           <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Candidates</h2>
           <p className="text-sm text-gray-400 mt-0.5">{filtered.length} total records</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => scrollTable('left')}
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-white border border-gray-200 text-gray-600 hover:text-[#800080] hover:border-[#cc66cc] hover:bg-[#f9f0f9] shadow-sm transition-all duration-200 hover:-translate-x-0.5 active:scale-95"
+              title="Scroll Left"
+            >
+              <ChevronLeft className="w-5 h-5 pr-0.5" />
+            </button>
+            <button
+              onClick={() => scrollTable('right')}
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-white border border-gray-200 text-gray-600 hover:text-[#800080] hover:border-[#cc66cc] hover:bg-[#f9f0f9] shadow-sm transition-all duration-200 hover:translate-x-0.5 active:scale-95"
+              title="Scroll Right"
+            >
+              <ChevronRight className="w-5 h-5 pl-0.5" />
+            </button>
+          </div>
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -646,7 +680,7 @@ const CandidateByJob = () => {
 
       {/* ── Table Card ── */}
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scroll-smooth" ref={tableContainerRef}>
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
@@ -664,6 +698,16 @@ const CandidateByJob = () => {
             <tbody className="divide-y divide-gray-100">
               {paginated.map((candidate, idx) => {
                 const isLastElements = idx >= paginated.length - 2 && paginated.length > 2
+
+                const resultData = interviewResults[candidate.interviewLink]
+                let interviewStatus = "Incomplete"
+                if (candidate.is_complete === 1) {
+                  if (resultData && resultData.success) {
+                    interviewStatus = "Completed"
+                  } else {
+                    interviewStatus = "Processing"
+                  }
+                }
 
                 return (
                   <tr key={candidate.id} className="hover:bg-[#f9f0f9]/40 transition-colors duration-100">
@@ -745,7 +789,7 @@ const CandidateByJob = () => {
                   {/* Interview Status */}
                   <td className="px-4 py-3">
                     <div className="flex justify-center">
-                      <StatusPill status={candidate.is_complete === 1 ? "Completed" : "Incomplete"} />
+                      <StatusPill status={interviewStatus} />
                     </div>
                   </td>
 
@@ -847,7 +891,7 @@ const CandidateByJob = () => {
 
                   {/* Report */}
                   <td className="px-4 py-3 text-center">
-                    {candidate.analysis ? (
+                    {(candidate.analysis && resultData && resultData.success) ? (
                       <button
                         onClick={() => handleViewReport(candidate)}
                         className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#800080] text-white hover:bg-[#6a006a] transition-colors duration-150 whitespace-nowrap shadow-sm"
