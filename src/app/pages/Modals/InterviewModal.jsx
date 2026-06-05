@@ -23,6 +23,7 @@ const InterviewModal = ({
   const [isInterview, setIsInterview] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [roundError, setRoundError] = useState("");
 
   const {
     register,
@@ -38,6 +39,13 @@ const InterviewModal = ({
   });
 
   const onSubmit = async (data) => {
+    // Validate: at least one round must be selected
+    if (!isCoding && !isInterview) {
+      setRoundError("Please select at least one round (Coding or Interview).");
+      return;
+    }
+    setRoundError("");
+
     setIsProcessing(true);
     setStatusMessage("Scheduling interview and preparing invite...");
     const formData = new FormData();
@@ -47,8 +55,6 @@ const InterviewModal = ({
     formData.append("phoneNumber", data.phoneNumber);
     formData.append("resumeFile", data.resumeFile[0]); // file
     formData.append("isCoding", data.isCoding ? true : false);
-    // formData.append("coding", isCoding ? 1 : 0);
-    // formData.append("interview", isInterview ? 1 : 0);
     formData.append("startTime", data.startTime);
     formData.append("endTime", data.endTime);
     formData.append("interviewDate", data.interviewDate);
@@ -109,40 +115,64 @@ const InterviewModal = ({
               <div className="grid gap-4 py-4">
 
                 {/* Candidate Name */}
-                <div className="grid gap-2">
+                <div className="grid gap-1">
                   <label className="text-sm font-medium">Candidate Name</label>
                   <TextInput
-                    {...register("candidateName", { required: true })}
+                    {...register("candidateName", { required: "Candidate name is required" })}
                     placeholder="John Doe"
+                    color={errors.candidateName ? "failure" : undefined}
                   />
+                  {errors.candidateName && (
+                    <p className="text-xs text-red-500 mt-0.5">{errors.candidateName.message}</p>
+                  )}
                 </div>
 
                 {/* Email + Phone */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
+                  <div className="grid gap-1">
                     <label className="text-sm font-medium">Email</label>
                     <TextInput
                       type="email"
-                      {...register("email", { required: true })}
+                      {...register("email", {
+                        required: "Email is required",
+                        pattern: {
+                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                          message: "Enter a valid email"
+                        }
+                      })}
                       placeholder="john@example.com"
+                      color={errors.email ? "failure" : undefined}
                     />
+                    {errors.email && (
+                      <p className="text-xs text-red-500 mt-0.5">{errors.email.message}</p>
+                    )}
                   </div>
 
-                  <div className="grid gap-2">
+                  <div className="grid gap-1">
                     <label className="text-sm font-medium">Phone</label>
                     <TextInput
                       type="text"
-                      {...register("phoneNumber", { required: true })}
+                      {...register("phoneNumber", {
+                        required: "Phone number is required",
+                        pattern: {
+                          value: /^[0-9+\s\-()]{7,15}$/,
+                          message: "Enter a valid phone number"
+                        }
+                      })}
                       placeholder="+91 9876543210"
+                      color={errors.phoneNumber ? "failure" : undefined}
                     />
+                    {errors.phoneNumber && (
+                      <p className="text-xs text-red-500 mt-0.5">{errors.phoneNumber.message}</p>
+                    )}
                   </div>
                 </div>
 
                 {/* Resume Upload */}
-                <div className="grid gap-2">
+                <div className="grid gap-1">
                   <label className="text-sm font-medium">Resume</label>
 
-                  <div className="relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-purple-500 transition-all bg-gray-50">
+                  <div className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-6 hover:border-purple-500 transition-all bg-gray-50 ${errors.resumeFile ? "border-red-400" : "border-gray-300"}`}>
 
                     {!selectedFile ? (
                       <>
@@ -167,7 +197,7 @@ const InterviewModal = ({
                       className="absolute inset-0 opacity-0 cursor-pointer"
                       accept=".pdf,.doc,.docx"
                       {...register("resumeFile", {
-                        required: true,
+                        required: "Please upload a resume",
                         onChange: (e) => {
                           const file = e.target.files[0];
                           setSelectedFile(file);
@@ -175,78 +205,99 @@ const InterviewModal = ({
                       })}
                     />
                   </div>
+                  {errors.resumeFile && (
+                    <p className="text-xs text-red-500 mt-0.5">{errors.resumeFile.message}</p>
+                  )}
                 </div>
 
-                <div className="flex items-center justify-between border p-4 rounded-xl bg-gray-50">
-                  <div>
-                    <p className="text-sm font-medium">Coding Assessment</p>
-                    <p className="text-xs text-gray-500">
-                      Enable coding round for this interview
-                    </p>
+                {/* Round Selection */}
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between border p-4 rounded-xl bg-gray-50">
+                    <div>
+                      <p className="text-sm font-medium">Coding Assessment</p>
+                      <p className="text-xs text-gray-500">
+                        Enable coding round for this interview
+                      </p>
+                    </div>
+
+                    <ToggleSwitch
+                      checked={isCoding}
+                      label=""
+                      color="purple"
+                      onChange={(checked) => {
+                        setIsCoding(checked);
+                        setValue("isCoding", checked);
+                        if (checked || isInterview) setRoundError("");
+                      }}
+                    />
                   </div>
 
-                  <ToggleSwitch
-                    checked={isCoding}
-                    label=""
-                    color="purple"
-                    onChange={(checked) => {
-                      setIsCoding(checked);
-                      setValue("isCoding", checked);
-                    }}
-                  />
-                </div>
+                  <div className="flex items-center justify-between border p-4 rounded-xl bg-gray-50">
+                    <div>
+                      <p className="text-sm font-medium">Interview</p>
+                      <p className="text-xs text-gray-500">
+                        Enable AI behavioral & technical questions
+                      </p>
+                    </div>
 
-
-                <div className="flex items-center justify-between border p-4 rounded-xl bg-gray-50">
-                  <div>
-                    <p className="text-sm font-medium">Interview</p>
-                    <p className="text-xs text-gray-500">
-                      Enable AI behavioral & technical questions
-                    </p>
+                    <ToggleSwitch
+                      checked={isInterview}
+                      label=""
+                      color="purple"
+                      onChange={(checked) => {
+                        setIsInterview(checked);
+                        setValue("isInterview", checked);
+                        if (checked || isCoding) setRoundError("");
+                      }}
+                    />
                   </div>
 
-                  <ToggleSwitch
-                    checked={isInterview}
-                    label=""
-                    color="purple"
-                    onChange={(checked) => {
-                      setIsInterview(checked);
-                      setValue("isInterview", checked);
-                    }}
-                  />
+                  {/* Round validation error */}
+                  {roundError && (
+                    <p className="text-xs text-red-500 mt-0.5">{roundError}</p>
+                  )}
                 </div>
 
                 {/* Date */}
-                <div className="grid gap-2">
+                <div className="grid gap-1">
                   <label className="text-sm font-medium">Interview Date</label>
                   <input
                     type="date"
-                    {...register("interviewDate", { required: true })}
-                    className="border rounded p-2 cursor-pointer w-full"
+                    {...register("interviewDate", { required: "Interview date is required" })}
+                    className={`border rounded p-2 cursor-pointer w-full ${errors.interviewDate ? "border-red-400 focus:outline-red-400" : ""}`}
                     onClick={(e) => e.target.showPicker && e.target.showPicker()}
                   />
+                  {errors.interviewDate && (
+                    <p className="text-xs text-red-500 mt-0.5">{errors.interviewDate.message}</p>
+                  )}
                 </div>
 
                 {/* Time */}
-                <div className="flex gap-3">
-                  <div className="grid gap-2 w-full">
+                <div className="grid grid-cols-2 gap-3 items-start">
+                  <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium">Start Time</label>
                     <input
                       type="time"
-                      {...register("startTime", { required: true })}
-                      className="border rounded p-2 cursor-pointer w-full"
+                      {...register("startTime", { required: "Start time is required" })}
+                      className={`border rounded p-2 cursor-pointer w-full ${errors.startTime ? "border-red-400 focus:outline-red-400" : ""}`}
                       onClick={(e) => e.target.showPicker && e.target.showPicker()}
                     />
+                    {errors.startTime && (
+                      <p className="text-xs text-red-500 mt-0.5">{errors.startTime.message}</p>
+                    )}
                   </div>
 
-                  <div className="grid gap-2 w-full">
+                  <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium">End Time</label>
                     <input
                       type="time"
-                      {...register("endTime")}
-                      className="border rounded p-2 cursor-pointer w-full"
+                      {...register("endTime", { required: "End time is required" })}
+                      className={`border rounded p-2 cursor-pointer w-full ${errors.endTime ? "border-red-400 focus:outline-red-400" : ""}`}
                       onClick={(e) => e.target.showPicker && e.target.showPicker()}
                     />
+                    {errors.endTime && (
+                      <p className="text-xs text-red-500 mt-0.5">{errors.endTime.message}</p>
+                    )}
                   </div>
                 </div>
 
