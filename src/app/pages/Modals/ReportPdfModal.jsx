@@ -42,19 +42,16 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
   // Use finalResultData score if available, fallback to parsed analysis score
   const score = finalResultData?.final_interview?.score ?? (parsedAnalysis.overall_score || analysisData?.score || 0);
   
-  const categoryScores = parsedAnalysis.category_scores || {
-    technical_area: 0,
-    communication_skills: 0,
-    project_experience: 0,
-    behavioral_fit: 0,
-    critical_thinking: 0
-  };
-
-  const mustToHaveSkills = parsedAnalysis.must_to_have_skills || [];
-  const topStrengths = parsedAnalysis.top_strengths || [];
-  const areasForImprovement = parsedAnalysis.areas_for_improvement || [];
+  const categoryScores = parsedAnalysis.category_scores;
+  const mustToHaveSkills = parsedAnalysis.must_to_have_skills;
+  const topStrengths = parsedAnalysis.top_strengths;
+  const areasForImprovement = parsedAnalysis.areas_for_improvement;
   const interviewQuestionsResponses = parsedAnalysis.interview_questions_responses || [];
   const overallAiSummary = parsedAnalysis.overall_ai_summary || "";
+  
+  // Coding Round specific data
+  const codingRoundResult = parsedAnalysis.coding_round_result;
+  const codingAiEvaluation = parsedAnalysis.coding_ai_evaluation;
 
   let codingQuestions = [];
   let codingAnswers = [];
@@ -358,146 +355,242 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
             )}
 
             {/* CATEGORY SCORES */}
-            <div className="mb-6 print:break-inside-avoid pt-4 shrink-0">
-              <div className="flex items-center gap-3 mb-6">
-                <h2 className="text-lg font-bold text-gray-900">Category Scores</h2>
-                <span className="px-2.5 py-1 rounded-full bg-fuchsia-50 text-fuchsia-600 border border-fuchsia-200 text-[10px] font-bold tracking-widest uppercase">
-                  5 CATEGORIES
-                </span>
-              </div>
-              
-              <div className="grid grid-cols-5 gap-4">
-                {[
-                  { name: "Technical Area", key: "technical_area", color: "emerald" },
-                  { name: "Communication Skills", key: "communication_skills", color: "emerald" },
-                  { name: "Project Experience", key: "project_experience", color: "amber" },
-                  { name: "Behavioral Fit", key: "behavioral_fit", color: "emerald" },
-                  { name: "Critical Thinking", key: "critical_thinking", color: "amber" },
-                ].map((cat, i) => (
-                  <div key={i} className={`bg-white rounded-xl p-4 text-center border border-gray-300 shadow-md border-t-4 print:border-gray-400 print:shadow-none print:border-t-4 ${cat.color === 'emerald' ? 'border-t-emerald-500 print:border-t-emerald-500' : 'border-t-amber-500 print:border-t-amber-500'}`}>
-                    <div className={`text-4xl font-normal mb-3 mt-1 ${cat.color === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`}>{categoryScores[cat.key] || 0}</div>
-                    <div className="w-full h-px bg-gray-200 mb-3"></div>
-                    <div className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest mx-auto leading-tight">
-                      {cat.name}
+            {categoryScores && (
+              <div className="mb-6 print:break-inside-avoid pt-4 shrink-0">
+                <div className="flex items-center gap-3 mb-6">
+                  <h2 className="text-lg font-bold text-gray-900">Category Scores</h2>
+                  <span className="px-2.5 py-1 rounded-full bg-fuchsia-50 text-fuchsia-600 border border-fuchsia-200 text-[10px] font-bold tracking-widest uppercase">
+                    5 CATEGORIES
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-5 gap-4">
+                  {[
+                    { name: "Technical Area", key: "technical_area", color: "emerald" },
+                    { name: "Communication Skills", key: "communication_skills", color: "emerald" },
+                    { name: "Project Experience", key: "project_experience", color: "amber" },
+                    { name: "Behavioral Fit", key: "behavioral_fit", color: "emerald" },
+                    { name: "Critical Thinking", key: "critical_thinking", color: "amber" },
+                  ].map((cat, i) => (
+                    <div key={i} className={`bg-white rounded-xl p-4 text-center border border-gray-300 shadow-md border-t-4 print:border-gray-400 print:shadow-none print:border-t-4 ${cat.color === 'emerald' ? 'border-t-emerald-500 print:border-t-emerald-500' : 'border-t-amber-500 print:border-t-amber-500'}`}>
+                      <div className={`text-4xl font-normal mb-3 mt-1 ${cat.color === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`}>{categoryScores[cat.key] || 0}</div>
+                      <div className="w-full h-px bg-gray-200 mb-3"></div>
+                      <div className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest mx-auto leading-tight">
+                        {cat.name}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* MUST HAVE SKILLS */}
-            <div className="mb-6 print:break-inside-avoid pt-2 shrink-0">
-              <div className="flex items-center gap-3 mb-6">
-                <h2 className="text-lg font-bold text-gray-900">Must Have Skills</h2>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold tracking-widest">
-                  {mustToHaveSkills.length} SKILLS
-                </span>
-              </div>
-              
-              <div className="space-y-4">
-                {mustToHaveSkills.map((skill, idx) => {
-                  const borderColors = [
-                    '#10b981', // emerald
-                    '#f59e0b', // amber
-                    '#800080', // purple
-                    '#ef4444', // red
-                  ];
-                  const textColors = [
-                    'text-emerald-600',
-                    'text-amber-600',
-                    'text-[#800080]',
-                    'text-red-600',
-                  ];
-                  const bgColors = [
-                    'bg-emerald-500',
-                    'bg-amber-500',
-                    'bg-[#800080]',
-                    'bg-red-500',
-                  ];
-                  const borderColor = borderColors[idx % borderColors.length];
-                  const textColor = textColors[idx % textColors.length];
-                  const bgColor = bgColors[idx % bgColors.length];
-                  const skillScore = skill.percentage || 0;
-                  const level = skillScore >= 80 ? "Expert" : skillScore >= 60 ? "Intermediate" : "Beginner";
-
-                  return (
-                    <div key={idx} className="bg-white rounded-xl p-5 shadow-md border border-gray-200 print:shadow-none print:break-inside-avoid" style={{ borderLeft: `4px solid ${borderColor}` }}>
-                      <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-bold text-gray-900 capitalize truncate pr-4">{skill.skill_name}</h4>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className="text-xs text-gray-500 italic font-medium">{level}</span>
-                          <span className={`text-sm font-bold ${textColor}`}>{skillScore}/100</span>
+            {/* CODING EVALUATION SCORES */}
+            {(codingRoundResult || codingAiEvaluation) && (
+              <div className="mb-6 print:break-inside-avoid pt-4 shrink-0">
+                <div className="flex items-center gap-3 mb-6">
+                  <h2 className="text-lg font-bold text-gray-900">Coding Metrics</h2>
+                  <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200 text-[10px] font-bold tracking-widest uppercase">
+                    5 METRICS
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-5 gap-4">
+                  {[
+                    { name: "Technical", key: "technical_score", color: "emerald" },
+                    { name: "Problem Solving", key: "problem_solving_score", color: "amber" },
+                    { name: "Code Quality", key: "code_quality_score", color: "emerald" },
+                    { name: "Test Cases", key: "test_case_score", color: "amber" },
+                    { name: "Complexity", key: "complexity_score", color: "emerald" },
+                  ].map((cat, i) => {
+                    let scoreValue = codingAiEvaluation?.[cat.key] ?? codingRoundResult?.[cat.key] ?? 0;
+                    return (
+                      <div key={i} className={`bg-white rounded-xl p-4 text-center border border-gray-300 shadow-md border-t-4 print:border-gray-400 print:shadow-none print:border-t-4 ${cat.color === 'emerald' ? 'border-t-emerald-500 print:border-t-emerald-500' : 'border-t-amber-500 print:border-t-amber-500'}`}>
+                        <div className={`text-4xl font-normal mb-3 mt-1 ${cat.color === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`}>{scoreValue}</div>
+                        <div className="w-full h-px bg-gray-200 mb-3"></div>
+                        <div className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest mx-auto leading-tight">
+                          {cat.name}
                         </div>
                       </div>
-                      <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mb-3">
-                        <div className={`h-full ${bgColor}`} style={{ width: `${skillScore}%` }}></div>
-                      </div>
-                      {skill.description && (
-                        <p className="text-sm text-gray-600 mt-2 leading-relaxed">{skill.description}</p>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
                 
-                {mustToHaveSkills.length === 0 && (
-                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-300 shadow-inner">
-                    No mandatory skills data available.
+                {codingAiEvaluation?.summary && (
+                  <div className="mt-4 bg-[#fcf9ff] border border-purple-200 rounded-xl p-4 shadow-sm">
+                    <p className="text-sm text-gray-700 leading-relaxed italic">{codingAiEvaluation.summary}</p>
                   </div>
                 )}
               </div>
-            </div>
+            )}
 
-            {/* TOP STRENGTHS & AREAS FOR IMPROVEMENT */}
-            <div className="mb-6 grid grid-cols-2 gap-6 print:break-inside-avoid shrink-0 pt-2">
-              <div className="flex flex-col h-full">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  Top Strengths <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">{topStrengths.length}</span>
-                </h3>
-                <div className={`flex-1 border rounded-xl p-6 flex flex-col shadow-sm ${topStrengths.length > 0 ? 'bg-emerald-50/30 border-emerald-200' : 'bg-emerald-50/50 border-emerald-300 border-dashed items-center justify-center text-center'}`}>
-                  {topStrengths.length > 0 ? (
-                    <ul className="space-y-3">
-                      {topStrengths.map((str, i) => (
-                        <li key={i} className="flex gap-2 text-sm text-gray-700">
-                          <span className="text-emerald-500 mt-0.5">✓</span>
-                          <span>{str}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <>
-                      <p className="text-sm font-bold text-emerald-700">No data found</p>
-                      <p className="text-xs text-emerald-600/80 mt-1 max-w-[200px] font-medium">Strengths will be populated once AI qualitative analysis is complete.</p>
-                    </>
-                  )}
+            {/* MUST HAVE SKILLS */}
+            {mustToHaveSkills && (
+              <div className="mb-6 print:break-inside-avoid pt-2 shrink-0">
+                <div className="flex items-center gap-3 mb-6">
+                  <h2 className="text-lg font-bold text-gray-900">Must Have Skills</h2>
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold tracking-widest">
+                    {mustToHaveSkills.length} SKILLS
+                  </span>
                 </div>
-              </div>
+                
+                <div className="space-y-4">
+                  {mustToHaveSkills.map((skill, idx) => {
+                    const borderColors = [
+                      '#10b981', // emerald
+                      '#f59e0b', // amber
+                      '#800080', // purple
+                      '#ef4444', // red
+                    ];
+                    const textColors = [
+                      'text-emerald-600',
+                      'text-amber-600',
+                      'text-[#800080]',
+                      'text-red-600',
+                    ];
+                    const bgColors = [
+                      'bg-emerald-500',
+                      'bg-amber-500',
+                      'bg-[#800080]',
+                      'bg-red-500',
+                    ];
+                    const borderColor = borderColors[idx % borderColors.length];
+                    const textColor = textColors[idx % textColors.length];
+                    const bgColor = bgColors[idx % bgColors.length];
+                    const skillScore = skill.percentage || 0;
+                    const level = skillScore >= 80 ? "Expert" : skillScore >= 60 ? "Intermediate" : "Beginner";
 
-              <div className="flex flex-col h-full">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  Areas for Improvement <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">{areasForImprovement.length}</span>
-                </h3>
-                <div className={`flex-1 border rounded-xl p-6 flex flex-col shadow-sm ${areasForImprovement.length > 0 ? 'bg-rose-50/30 border-rose-200' : 'bg-rose-50/50 border-rose-300 border-dashed items-center justify-center text-center'}`}>
-                  {areasForImprovement.length > 0 ? (
-                    <ul className="space-y-4">
-                      {areasForImprovement.map((area, i) => (
-                        <li key={i} className="flex flex-col gap-1">
-                          <div className="flex gap-2">
-                            <span className="text-rose-500 text-sm mt-0.5">⚠</span>
-                            <span className="text-sm font-bold text-gray-800">{area.area}</span>
+                    return (
+                      <div key={idx} className="bg-white rounded-xl p-5 shadow-md border border-gray-200 print:shadow-none print:break-inside-avoid" style={{ borderLeft: `4px solid ${borderColor}` }}>
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="font-bold text-gray-900 capitalize truncate pr-4">{skill.skill_name}</h4>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="text-xs text-gray-500 italic font-medium">{level}</span>
+                            <span className={`text-sm font-bold ${textColor}`}>{skillScore}/100</span>
                           </div>
-                          <span className="text-xs text-gray-600 ml-5">{area.description}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <>
-                      <p className="text-sm font-bold text-rose-700">No data found</p>
-                      <p className="text-xs text-rose-600/80 mt-1 max-w-[200px] font-medium">Improvement areas will be populated once AI qualitative analysis is complete.</p>
-                    </>
+                        </div>
+                        <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mb-3">
+                          <div className={`h-full ${bgColor}`} style={{ width: `${skillScore}%` }}></div>
+                        </div>
+                        {skill.description && (
+                          <p className="text-sm text-gray-600 mt-2 leading-relaxed">{skill.description}</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                  
+                  {mustToHaveSkills.length === 0 && (
+                    <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-300 shadow-inner">
+                      No mandatory skills data available.
+                    </div>
                   )}
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* TOP STRENGTHS & AREAS FOR IMPROVEMENT (AI INTERVIEW) */}
+            {(topStrengths || areasForImprovement) && (
+              <div className="mb-6 grid grid-cols-2 gap-6 print:break-inside-avoid shrink-0 pt-2">
+                <div className="flex flex-col h-full">
+                  <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    Top Strengths <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">{topStrengths?.length || 0}</span>
+                  </h3>
+                  <div className={`flex-1 border rounded-xl p-6 flex flex-col shadow-sm ${(topStrengths?.length || 0) > 0 ? 'bg-emerald-50/30 border-emerald-200' : 'bg-emerald-50/50 border-emerald-300 border-dashed items-center justify-center text-center'}`}>
+                    {(topStrengths?.length || 0) > 0 ? (
+                      <ul className="space-y-3">
+                        {topStrengths.map((str, i) => (
+                          <li key={i} className="flex gap-2 text-sm text-gray-700">
+                            <span className="text-emerald-500 mt-0.5">✓</span>
+                            <span>{str}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <>
+                        <p className="text-sm font-bold text-emerald-700">No data found</p>
+                        <p className="text-xs text-emerald-600/80 mt-1 max-w-[200px] font-medium">Strengths will be populated once AI qualitative analysis is complete.</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col h-full">
+                  <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    Areas for Improvement <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">{areasForImprovement?.length || 0}</span>
+                  </h3>
+                  <div className={`flex-1 border rounded-xl p-6 flex flex-col shadow-sm ${(areasForImprovement?.length || 0) > 0 ? 'bg-rose-50/30 border-rose-200' : 'bg-rose-50/50 border-rose-300 border-dashed items-center justify-center text-center'}`}>
+                    {(areasForImprovement?.length || 0) > 0 ? (
+                      <ul className="space-y-4">
+                        {areasForImprovement.map((area, i) => (
+                          <li key={i} className="flex flex-col gap-1">
+                            <div className="flex gap-2">
+                              <span className="text-rose-500 text-sm mt-0.5">⚠</span>
+                              <span className="text-sm font-bold text-gray-800">{area.area}</span>
+                            </div>
+                            <span className="text-xs text-gray-600 ml-5">{area.description}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <>
+                        <p className="text-sm font-bold text-rose-700">No data found</p>
+                        <p className="text-xs text-rose-600/80 mt-1 max-w-[200px] font-medium">Improvement areas will be populated once AI qualitative analysis is complete.</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* CODING STRENGTHS & RED FLAGS */}
+            {(codingAiEvaluation?.strengths?.length > 0 || codingAiEvaluation?.red_flags?.length > 0) && (
+              <div className="mb-6 grid grid-cols-2 gap-6 print:break-inside-avoid shrink-0 pt-2">
+                <div className="flex flex-col h-full">
+                  <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    Key Strengths <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">{codingAiEvaluation.strengths.length}</span>
+                  </h3>
+                  <div className={`flex-1 border rounded-xl p-6 flex flex-col shadow-sm ${codingAiEvaluation.strengths.length > 0 ? 'bg-emerald-50/30 border-emerald-200' : 'bg-emerald-50/50 border-emerald-300 border-dashed items-center justify-center text-center'}`}>
+                    {codingAiEvaluation.strengths.length > 0 ? (
+                      <ul className="space-y-3">
+                        {codingAiEvaluation.strengths.map((str, i) => (
+                          <li key={i} className="flex gap-2 text-sm text-gray-700">
+                            <span className="text-emerald-500 mt-0.5">✓</span>
+                            <span>{str}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <>
+                        <p className="text-sm font-bold text-emerald-700">No strengths noted</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col h-full">
+                  <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    Red Flags / Concerns <span className="bg-gray-100 border border-gray-300 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">{codingAiEvaluation.red_flags.length}</span>
+                  </h3>
+                  <div className={`flex-1 border rounded-xl p-6 flex flex-col shadow-sm ${codingAiEvaluation.red_flags.length > 0 ? 'bg-rose-50/30 border-rose-200' : 'bg-rose-50/50 border-rose-300 border-dashed items-center justify-center text-center'}`}>
+                    {codingAiEvaluation.red_flags.length > 0 ? (
+                      <ul className="space-y-4">
+                        {codingAiEvaluation.red_flags.map((flag, i) => (
+                          <li key={i} className="flex flex-col gap-1">
+                            <div className="flex gap-2">
+                              <span className="text-rose-500 text-sm mt-0.5">⚠</span>
+                              <span className="text-sm font-bold text-gray-800">{flag}</span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <>
+                        <p className="text-sm font-bold text-rose-700">No red flags</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* INTERVIEW QUESTIONS & RESPONSES */}
             {interviewQuestionsResponses.length > 0 && (

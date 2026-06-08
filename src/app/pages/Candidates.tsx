@@ -505,7 +505,6 @@ export function Candidates() {
   const handleViewReport = async (candidate) => {
     try {
       const token = candidate.interviewLink.split('/').pop();
-      const jobId = candidate.jobId || candidate.job_id;
       
       if (candidate.codingDTO?.questionData) {
         setCodingData(candidate.codingDTO.questionData);
@@ -514,7 +513,6 @@ export function Candidates() {
       }
       
       const resAnalysis = await dispatch(getDownloadReportPdf({ token })).unwrap();
-      const resJob = await dispatch(getSingleJob({ id: jobId })).unwrap();
       
       let codingAns = null;
       try {
@@ -538,12 +536,10 @@ export function Candidates() {
       }
       
       console.log("Analysis Data:", resAnalysis);
-      console.log("Job Data:", resJob);
       
       setReportCodingAnswersData(codingAns);
       setReportFinalResultData(finalResult);
       setCurrentAnalysisData(resAnalysis?.data || {});
-      setCurrentJobData(resJob?.data || {});
       setIsReportModalOpen(true);
       
       // toast.success("APIs called successfully, check network tab");
@@ -708,11 +704,11 @@ export function Candidates() {
                     <td className="px-4 py-3 text-center text-gray-500 text-xs whitespace-nowrap">{candidate.candidatePhone}</td>
 
                     <td className="px-4 py-3 text-center whitespace-nowrap text-xs font-semibold text-[#800080] capitalize">
-                      {candidate.users?.firstName} {candidate.users?.lastName}
+                      {candidate.users?.role === 'SUPER_ADMIN' || candidate.users?.email === 'superadmin@yopmail.com' || candidate.users?.email === 'souvick629@yopmail.com' ? 'Rajeev Reddy' : `${candidate.users?.firstName || ""} ${candidate.users?.lastName || ""}`}
                     </td>
 
                     <td className="px-4 py-3 text-center whitespace-nowrap text-xs text-gray-500 lowercase">
-                      {candidate.users?.email}
+                      {candidate.users?.role === 'SUPER_ADMIN' || candidate.users?.email === 'superadmin@yopmail.com' || candidate.users?.email === 'souvick629@yopmail.com' ? 'info@hiringeye.ai' : candidate.users?.email}
                     </td>
 
                     {/* Resume */}
