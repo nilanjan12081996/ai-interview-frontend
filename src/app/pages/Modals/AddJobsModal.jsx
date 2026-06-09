@@ -126,37 +126,44 @@ export default function AddJobDialog({
               </label>
 
               {mandatoryFields.map((field, index) => (
-                <div key={field.id} className="flex gap-2 items-center">
-                  <TextInput
-                    {...register(
-                      `mandatorySkills.${index}.skillName`,
-                      {
-                        required:
-                          "Mandatory skill cannot be empty",
-                      }
-                    )}
-                  />
+                <div key={field.id} className="flex flex-col gap-1">
+                  <div className="flex gap-2 items-center">
+                    <TextInput
+                      {...register(
+                        `mandatorySkills.${index}.skillName`,
+                        {
+                          required:
+                            "Mandatory skill cannot be empty",
+                        }
+                      )}
+                    />
 
-                  <Button
-                    type="button"
-                    className="bg-[#800080]"
-                    onClick={() =>
-                      appendMandatory({ skillName: "" })
-                    }
-                  >
-                    +
-                  </Button>
-
-                  {mandatoryFields.length > 1 && (
                     <Button
                       type="button"
                       className="bg-[#800080]"
                       onClick={() =>
-                        removeMandatory(index)
+                        appendMandatory({ skillName: "" })
                       }
                     >
-                      -
+                      +
                     </Button>
+
+                    {mandatoryFields.length > 1 && (
+                      <Button
+                        type="button"
+                        className="bg-[#800080]"
+                        onClick={() =>
+                          removeMandatory(index)
+                        }
+                      >
+                        -
+                      </Button>
+                    )}
+                  </div>
+                  {errors?.mandatorySkills?.[index]?.skillName && (
+                    <p className="text-red-500 text-sm">
+                      {errors.mandatorySkills[index].skillName.message}
+                    </p>
                   )}
                 </div>
               ))}
@@ -169,33 +176,44 @@ export default function AddJobDialog({
               </label>
 
               {niceFields.map((field, index) => (
-                <div key={field.id} className="flex gap-2 items-center">
-                  <TextInput
-                    {...register(
-                      `niceToHaveSkills.${index}.skillName`
-                    )}
-                  />
+                <div key={field.id} className="flex flex-col gap-1">
+                  <div className="flex gap-2 items-center">
+                    <TextInput
+                      {...register(
+                        `niceToHaveSkills.${index}.skillName`,
+                        {
+                          required:
+                            "Nice to have skill cannot be empty",
+                        }
+                      )}
+                    />
 
-                  <Button
-                    type="button"
-                    className="bg-[#800080]"
-                    onClick={() =>
-                      appendNice({ skillName: "" })
-                    }
-                  >
-                    +
-                  </Button>
-
-                  {niceFields.length > 1 && (
                     <Button
                       type="button"
                       className="bg-[#800080]"
                       onClick={() =>
-                        removeNice(index)
+                        appendNice({ skillName: "" })
                       }
                     >
-                      -
+                      +
                     </Button>
+
+                    {niceFields.length > 1 && (
+                      <Button
+                        type="button"
+                        className="bg-[#800080]"
+                        onClick={() =>
+                          removeNice(index)
+                        }
+                      >
+                        -
+                      </Button>
+                    )}
+                  </div>
+                  {errors?.niceToHaveSkills?.[index]?.skillName && (
+                    <p className="text-red-500 text-sm">
+                      {errors.niceToHaveSkills[index].skillName.message}
+                    </p>
                   )}
                 </div>
               ))}
@@ -223,16 +241,16 @@ export default function AddJobDialog({
               <label className="text-sm font-medium">
                 Job Level
               </label>
-             <Select {...register("level")}>
+             <Select {...register("level", { required: "Job Level is required" })}>
               <option value="">---Select---</option>
               <option value="ADVANCE">Advance</option>
               <option value="HARD">Hard</option>
               <option value="MEDIUM">Medium</option>
               <option value="LOW">Low</option>
              </Select>
-              {errors.jd && (
+              {errors.level && (
                 <p className="text-red-500 text-sm">
-                  {errors.jd.message}
+                  {errors.level.message}
                 </p>
               )}
             </div>
