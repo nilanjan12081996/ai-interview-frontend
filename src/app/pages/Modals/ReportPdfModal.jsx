@@ -251,26 +251,26 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
               <div className="space-y-4">
                 <div className="flex justify-between items-center border-b border-gray-100 pb-4">
                   <span className="text-sm text-gray-500 whitespace-nowrap mr-4">Interview Link</span>
-                  <a href={interviewLink} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
+                  <a href={interviewLink} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline truncate max-w-[500px] text-right">
                     {interviewLink || "Not Available"}
                   </a>
                 </div>
                 <div className="flex justify-between items-center border-b border-gray-100 pb-4">
                   <span className="text-sm text-gray-500 whitespace-nowrap mr-4">Video Recording</span>
-                  <a href={videoLink ? (videoLink.startsWith('http') ? videoLink : `${import.meta.env.VITE_MAIN_API_URL}${videoLink}`) : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
+                  <a href={videoLink ? (videoLink.startsWith('http') ? videoLink : `${import.meta.env.VITE_MAIN_API_URL}${videoLink}`) : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline truncate max-w-[500px] text-right">
                     {videoLink ? (videoLink.startsWith('http') ? videoLink : `${import.meta.env.VITE_MAIN_API_URL}${videoLink}`) : "Not Available"}
                   </a>
                 </div>
                 <div className={`flex justify-between items-center ${codingQuestions.length > 0 ? 'border-b border-gray-100 pb-4' : ''}`}>
                   <span className="text-sm text-gray-500 whitespace-nowrap mr-4">Transcript</span>
-                  <a href={transcriptLink ? (transcriptLink.startsWith('http') ? transcriptLink : `${import.meta.env.VITE_MAIN_API_URL}${transcriptLink}`) : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
+                  <a href={transcriptLink ? (transcriptLink.startsWith('http') ? transcriptLink : `${import.meta.env.VITE_MAIN_API_URL}${transcriptLink}`) : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline truncate max-w-[500px] text-right">
                     {transcriptLink ? (transcriptLink.startsWith('http') ? transcriptLink : `${import.meta.env.VITE_MAIN_API_URL}${transcriptLink}`) : "Not Available"}
                   </a>
                 </div>
                 {codingQuestions.length > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-500 whitespace-nowrap mr-4">Coding Round Link</span>
-                    <a href={`${window.location.origin}/coding-report/${interviewLink.split('/').pop()}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
+                    <a href={`${window.location.origin}/coding-report/${interviewLink.split('/').pop()}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline truncate max-w-[500px] text-right">
                       {`${window.location.origin}/coding-report/${interviewLink.split('/').pop()}`}
                     </a>
                   </div>
@@ -617,7 +617,9 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-gray-700 leading-relaxed italic mt-2"></p>
+                <p className="text-sm text-gray-700 leading-relaxed italic mt-2">
+                  {codingAiEvaluation?.summary || "No AI summary available for the coding round."}
+                </p>
               </div>
             )}
 
@@ -692,6 +694,44 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
                                <code>{answerText}</code>
                              </pre>
                            </div>
+
+                           {/* AI Task Evaluation */}
+                           {(() => {
+                             const taskEval = codingAiEvaluation?.task_evaluations?.find(t => t.task_number === idx + 1);
+                             if (taskEval) {
+                               return (
+                                 <div className="mt-5 bg-[#11111a] border border-gray-700/50 rounded-lg p-5 shadow-inner">
+                                   <div className="flex items-center gap-3 mb-3">
+                                     <h5 className="text-[11px] font-bold text-purple-400 uppercase tracking-widest flex items-center gap-1.5">
+                                       <span className="text-purple-500">✦</span> AI Analysis
+                                     </h5>
+                                     <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${taskEval.status === 'PASSED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                                       {taskEval.status}
+                                     </span>
+                                   </div>
+                                   <p className="text-sm text-gray-300 mb-4 leading-relaxed italic border-l-2 border-purple-500/50 pl-3">"{taskEval.summary}"</p>
+                                   
+                                   {taskEval.concerns && taskEval.concerns.length > 0 && (
+                                     <div className="pt-3 border-t border-gray-800/50">
+                                       <h6 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                         <div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div> 
+                                         Concerns & Feedback
+                                       </h6>
+                                       <ul className="space-y-1.5 ml-1">
+                                         {taskEval.concerns.map((concern, i) => (
+                                           <li key={i} className="flex gap-2 text-xs text-rose-200/70">
+                                             <span className="text-rose-500 mt-0.5 opacity-70 text-[10px]">❖</span>
+                                             <span>{concern}</span>
+                                           </li>
+                                         ))}
+                                       </ul>
+                                     </div>
+                                   )}
+                                 </div>
+                               );
+                             }
+                             return null;
+                           })()}
                          </div>
                        </div>
                     );
