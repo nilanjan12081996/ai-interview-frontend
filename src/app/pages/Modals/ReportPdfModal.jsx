@@ -278,87 +278,29 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
               </div>
             </div>
 
-            {/* FINAL ASSESSMENT SUMMARY */}
-            {finalResultData && (() => {
-              const hasAI = !!finalResultData.ai_interview;
-              const hasCoding = !!finalResultData.coding_round_available;
-              const numRounds = (hasAI ? 1 : 0) + (hasCoding ? 1 : 0);
-
-              if (numRounds === 0) return null;
-
-              return (
-                <div className="mb-6 bg-white rounded-2xl p-6 shadow-md border border-gray-300 print:break-inside-avoid print:shadow-none print:border-gray-400 shrink-0">
-                  <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-xs font-bold text-gray-800 uppercase tracking-widest">
-                      {numRounds === 1 ? "ROUND" : "Round-by-Round Breakdown"}
-                    </h3>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                      finalResultData.final_interview?.select_reject === 'Select' 
-                        ? 'bg-emerald-100 text-emerald-700 border-emerald-200' 
-                        : 'bg-red-100 text-red-700 border-red-200'
-                    } border`}>
-                      Final Status: {finalResultData.final_interview?.select_reject || 'Pending'}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className={`grid grid-cols-1 ${numRounds === 1 ? '' : 'md:grid-cols-2'} gap-4`}>
-                      {/* AI Interview */}
-                      {hasAI && (
-                        <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                          <div className="flex justify-between items-start mb-3">
-                            <div className="flex flex-col">
-                              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">AI Interview</span>
-                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${
-                                finalResultData.ai_interview?.select_reject === 'Select' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'
-                              }`}>
-                                {finalResultData.ai_interview?.select_reject || 'N/A'}
-                              </span>
-                            </div>
-                            <div className="flex flex-col items-end">
-                              <span className="text-xs text-gray-400 font-medium uppercase">Score</span>
-                              <span className="text-lg font-bold text-gray-900">{finalResultData.ai_interview?.score || 0}<span className="text-sm text-gray-400">/100</span></span>
-                            </div>
-                          </div>
-                          <p className="text-xs text-gray-600 mt-2 leading-relaxed whitespace-pre-wrap">
-                            {finalResultData.ai_interview?.reason}
-                          </p>
-                        </div>
-                      )}
-
-                    {/* Coding Interview */}
-                    {finalResultData.coding_round_available && (
-                      <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex flex-col">
-                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Coding Interview</span>
-                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${
-                              finalResultData.coding_interview?.select_reject === 'Select' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'
-                            }`}>
-                              {finalResultData.coding_interview?.select_reject || 'N/A'}
-                            </span>
-                          </div>
-                          <div className="flex flex-col items-end">
-                            <span className="text-xs text-gray-400 font-medium uppercase">Score</span>
-                            <span className="text-lg font-bold text-gray-900">{finalResultData.coding_interview?.score || 0}<span className="text-sm text-gray-400">/100</span></span>
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-2 leading-relaxed whitespace-pre-wrap">
-                          {finalResultData.coding_interview?.reason}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-            })()}
-
-            {/* OVERALL AI SUMMARY */}
-            {overallAiSummary && (
+            {/* OVERALL AI SUMMARY / VOICE INTERVIEW SUMMARY */}
+            {(overallAiSummary || finalResultData?.ai_interview) && (
               <div className="mb-6 bg-[#fcf9ff] border border-purple-200 rounded-2xl p-6 shadow-sm print:break-inside-avoid print:shadow-none pt-4 shrink-0">
-                <h3 className="text-xs font-semibold text-[#800080] tracking-widest uppercase mb-3">AI Executive Summary</h3>
-                <p className="text-sm text-gray-700 leading-relaxed italic">{overallAiSummary}</p>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-semibold text-[#800080] tracking-widest uppercase">AI Voice Round Summery</h3>
+                  {finalResultData?.ai_interview && (
+                    <div className="flex items-center gap-4">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+                        finalResultData.ai_interview.select_reject?.toLowerCase().includes('borderline') ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                        finalResultData.ai_interview.select_reject?.toLowerCase().includes('select') ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
+                        'bg-red-100 text-red-700 border-red-200'
+                      }`}>
+                        Status: {finalResultData.ai_interview.select_reject || 'N/A'}
+                      </span>
+                      <div className="text-sm font-bold text-gray-800 bg-white px-3 py-1 rounded-full border border-gray-200">
+                        Score: {finalResultData.ai_interview.score || 0}/100
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {overallAiSummary && (
+                  <p className="text-sm text-gray-700 leading-relaxed italic mt-2">{overallAiSummary}</p>
+                )}
               </div>
             )}
 
@@ -652,6 +594,30 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* CODING ROUND SUMMARY */}
+            {finalResultData?.coding_round_available && (
+              <div className="mb-6 bg-[#f8fbff] border border-blue-200 rounded-2xl p-6 shadow-sm print:break-inside-avoid print:shadow-none pt-4 shrink-0">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold text-blue-600 tracking-widest uppercase">Coding Round Summary</h3>
+                  {finalResultData?.coding_interview && (
+                    <div className="flex items-center gap-4">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+                        finalResultData.coding_interview.select_reject?.toLowerCase().includes('borderline') ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                        finalResultData.coding_interview.select_reject?.toLowerCase().includes('select') ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
+                        'bg-red-100 text-red-700 border-red-200'
+                      }`}>
+                        Status: {finalResultData.coding_interview.select_reject || 'N/A'}
+                      </span>
+                      <div className="text-sm font-bold text-gray-800 bg-white px-3 py-1 rounded-full border border-gray-200">
+                        Score: {finalResultData.coding_interview.score || 0}/100
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-gray-700 leading-relaxed italic mt-2"></p>
               </div>
             )}
 

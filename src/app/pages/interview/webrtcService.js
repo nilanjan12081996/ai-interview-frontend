@@ -23,10 +23,17 @@ export class WebRTCService {
 
     // We still need ontrack to keep WebRTC happy, but we won't play AI audio
     // OpenAI requires a valid audio track setup even if we don't use AI voice
-    this.pc.ontrack = () => {};
+    this.pc.ontrack = () => { };
 
     // Capture microphone for VAD + Whisper transcription
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        noiseSuppression: true,
+        echoCancellation: true,
+        autoGainControl: true
+      }
+    });
     stream.getTracks().forEach((track) => this.pc.addTrack(track, stream));
 
     this.dc = this.pc.createDataChannel("oai-events");
@@ -44,7 +51,7 @@ export class WebRTCService {
           },
           turn_detection: {
             type: "server_vad",
-            threshold: 0.5,
+            threshold: 0.8,
             prefix_padding_ms: 300,
             silence_duration_ms: 1500,
           },
