@@ -261,12 +261,20 @@ export default function ReportPdfModal({ open, setOpen, analysisData, jobData, c
                     {videoLink ? (videoLink.startsWith('http') ? videoLink : `${import.meta.env.VITE_MAIN_API_URL}${videoLink}`) : "Not Available"}
                   </a>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className={`flex justify-between items-center ${codingQuestions.length > 0 ? 'border-b border-gray-100 pb-4' : ''}`}>
                   <span className="text-sm text-gray-500 whitespace-nowrap mr-4">Transcript</span>
                   <a href={transcriptLink ? (transcriptLink.startsWith('http') ? transcriptLink : `${import.meta.env.VITE_MAIN_API_URL}${transcriptLink}`) : "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
                     {transcriptLink ? (transcriptLink.startsWith('http') ? transcriptLink : `${import.meta.env.VITE_MAIN_API_URL}${transcriptLink}`) : "Not Available"}
                   </a>
                 </div>
+                {codingQuestions.length > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500 whitespace-nowrap mr-4">Coding Round Link</span>
+                    <a href={`${window.location.origin}/coding-report/${interviewLink.split('/').pop()}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#800080] hover:underline break-all text-right">
+                      {`${window.location.origin}/coding-report/${interviewLink.split('/').pop()}`}
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -15,6 +15,7 @@ import Setting from "./pages/Setting"
 import Coding from "./pages/Coding"
 import GptCost from "./pages/GptCost"
 import { ProfilePage } from "./pages/ProfilePage"
+import CodingReportPage from "./pages/CodingReportPage"
 
 const RoutesConfig = [
   // =========================
@@ -40,15 +41,14 @@ const RoutesConfig = [
     ],
   },
   {
-    path: "/",
-    element: <OutsideLayout />,
+    path: "/interview/:token",
+    element: <InterviewRoom />,
     errorElement: <ErrorPage />,
-    children: [
-      {
-        path: "interview/:token",
-        element: <InterviewRoom />,
-      },
-    ],
+  },
+  {
+    path: "/coding-report/:token",
+    element: <CodingReportPage />,
+    errorElement: <ErrorPage />,
   },
   // =========================
   // INSIDE LAYOUT (Protected Pages)
